@@ -82,6 +82,14 @@ static void ui_main_paint(HWND hwnd,HDC supplied){
  HPEN separator=CreatePen(PS_SOLID,1,RGB(59,62,69));previous=SelectObject(dc,separator);MoveToEx(dc,14,80,NULL);LineTo(dc,r.right-14,80);MoveToEx(dc,14,r.bottom-50,NULL);LineTo(dc,r.right-14,r.bottom-50);SelectObject(dc,previous);DeleteObject(separator);
  BitBlt(target,0,0,r.right,r.bottom,dc,0,0,SRCCOPY);SelectObject(dc,old);DeleteObject(bitmap);DeleteDC(dc);if(!supplied)EndPaint(hwnd,&paint);
 }
+static void ui_paint_hotkey(HWND hwnd,HDC supplied){
+ PAINTSTRUCT paint;HDC dc=supplied?supplied:BeginPaint(hwnd,&paint);RECT r;GetClientRect(hwnd,&r);ui_fill(dc,r,RGB(29,47,69));
+ struct WKey key=word_key((WORD)SendMessageW(hwnd,HKM_GETHOTKEY,0,0));wchar_t text[160];
+ if(key.vk)key_name(key,text,160);else swprintf(text,160,L"%ls%ls%ls%ls",key.mods&MOD_CONTROL?L"Ctrl+":L"",key.mods&MOD_ALT?L"Alt+":L"",key.mods&MOD_SHIFT?L"Shift+":L"",ui_text(L"Bấm phím…",L"Press a key…"));
+ SelectObject(dc,font);ui_label(dc,text,(RECT){12,0,r.right-8,r.bottom},RGB(235,240,248),DT_LEFT|DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS);
+ if(GetFocus()==hwnd){HPEN pen=CreatePen(PS_SOLID,1,RGB(51,148,236));HGDIOBJ old=SelectObject(dc,pen),brush=SelectObject(dc,GetStockObject(NULL_BRUSH));Rectangle(dc,0,0,r.right,r.bottom);SelectObject(dc,old);SelectObject(dc,brush);DeleteObject(pen);}
+ if(!supplied)EndPaint(hwnd,&paint);
+}
 static BOOL ui_draw_button(DRAWITEMSTRUCT *item){
  if(item->CtlType!=ODT_BUTTON)return FALSE;int id=(int)item->CtlID;RECT r=item->rcItem;HDC dc=item->hDC;BOOL hover=ui_hover==item->hwndItem,down=(item->itemState&ODS_SELECTED)!=0;
  COLORREF base=RGB(30,51,77),text=RGB(229,234,242);ui_fill(dc,r,id==UI_PIN||id==UI_HIDE?RGB(42,72,111):ui_bg());

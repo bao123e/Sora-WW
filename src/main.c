@@ -50,7 +50,8 @@ static struct WKey word_key(WORD word){struct WKey key={LOBYTE(word),0};BYTE mod
 static void key_name(struct WKey key,wchar_t *text,size_t cap){
  wchar_t name[80]={0};LONG scan=(LONG)MapVirtualKeyW(key.vk,MAPVK_VK_TO_VSC)<<16;
  if(key.vk==VK_INSERT||key.vk==VK_DELETE||key.vk==VK_HOME||key.vk==VK_END||key.vk==VK_PRIOR||key.vk==VK_NEXT||key.vk==VK_LEFT||key.vk==VK_RIGHT||key.vk==VK_UP||key.vk==VK_DOWN)scan|=1L<<24;
- if(!GetKeyNameTextW(scan,name,80))swprintf(name,80,L"VK %u",key.vk);
+ if(key.vk>=VK_F1&&key.vk<=VK_F24)swprintf(name,80,L"F%u",key.vk-VK_F1+1);
+ else if(!GetKeyNameTextW(scan,name,80))swprintf(name,80,L"VK %u",key.vk);
  swprintf(text,cap,L"%ls%ls%ls%ls",key.mods&MOD_CONTROL?L"Ctrl+":L"",key.mods&MOD_ALT?L"Alt+":L"",key.mods&MOD_SHIFT?L"Shift+":L"",name);
 }
 static void update_key_text(void){
@@ -119,9 +120,15 @@ static void position_for(HWND hwnd,int width,int height,int *x,int *y){
 static void center_panel(void){RECT rect;GetWindowRect(app,&rect);int x,y;position_for(app,rect.right-rect.left,rect.bottom-rect.top,&x,&y);if(x!=rect.left||y!=rect.top)SetWindowPos(app,NULL,x,y,0,0,SWP_NOSIZE|SWP_NOZORDER|SWP_NOACTIVATE);}
 static void show_panel(void){poll_game();center_panel();ShowWindow(app,SW_SHOWNORMAL);SetForegroundWindow(app);}
 static LRESULT CALLBACK key_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
+ if(msg==WM_ERASEBKGND)return 1;
+ if(msg==WM_PAINT){ui_paint_hotkey(hwnd,NULL);return 0;}
+ if(msg==WM_PRINTCLIENT){ui_paint_hotkey(hwnd,(HDC)wp);return 0;}
  if(msg==WM_SETFOCUS){key_editing=TRUE;suspend_key();}
  if(msg==WM_KILLFOCUS){key_editing=FALSE;if(!key_registered)key_registered=set_key_registration(menu_key);}
- return CallWindowProcW(old_key_proc,hwnd,msg,wp,lp);
+ LRESULT result=CallWindowProcW(old_key_proc,hwnd,msg,wp,lp);
+ if(msg==WM_SETFOCUS)HideCaret(hwnd);
+ if(msg==WM_SETFOCUS||msg==WM_KILLFOCUS||msg==WM_KEYDOWN||msg==WM_KEYUP||msg==WM_SYSKEYDOWN||msg==WM_SYSKEYUP||msg==HKM_SETHOTKEY)InvalidateRect(hwnd,NULL,FALSE);
+ return result;
 }
 static HWND control(const wchar_t *klass,const wchar_t *text,DWORD style,int x,int y,int w,int h,int id){
  HWND c=CreateWindowExW(!wcscmp(klass,HOTKEY_CLASSW)?WS_EX_CLIENTEDGE:0,klass,text,WS_CHILD|WS_VISIBLE|style,x,y,w,h,app,(HMENU)(INT_PTR)id,instance,NULL);SendMessageW(c,WM_SETFONT,(WPARAM)font,TRUE);return c;
