@@ -40,6 +40,7 @@ static wchar_t game_path[32768],launch_notice[256];
 static BOOL launch_pending;
 static ULONGLONG launch_started;
 static BOOL trial_cd,trial_damage;
+static wchar_t live_notice[256];
 static NOTIFYICONDATAW tray;
 
 static WORD key_word(struct WKey key);
@@ -55,10 +56,13 @@ static void trial_toggle(int id);
 static void trial_remove(void);
 static void trial_poll(void);
 static void trial_shutdown(void);
+static void live_controls(void);
+static void live_shutdown(void);
 static LRESULT CALLBACK key_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp);
 #include "ui.h"
 #include "launcher.h"
 #include "trial.h"
+#include "live.h"
 
 static BOOL set_key_registration(struct WKey key){return RegisterHotKey(app,MENU_HOTKEY,key.mods|MOD_NOREPEAT,key.vk);}
 static void suspend_key(void){if(key_registered)UnregisterHotKey(app,MENU_HOTKEY);key_registered=FALSE;}
@@ -164,7 +168,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
   if(ui_command(LOWORD(wp)))return 0;
   if(LOWORD(wp)==UI_BROWSE_GAME){choose_game();return 0;}
   if(LOWORD(wp)==UI_LAUNCH_GAME){launch_game();return 0;}
-  if(LOWORD(wp)==UI_TRIAL_CD||LOWORD(wp)==UI_TRIAL_DAMAGE){trial_toggle(LOWORD(wp));return 0;}
+  if(LOWORD(wp)==UI_TRIAL_CD){live_toggle();return 0;}
+  if(LOWORD(wp)==UI_TRIAL_DAMAGE){trial_toggle(LOWORD(wp));return 0;}
   if(LOWORD(wp)==UI_TRIAL_REMOVE){trial_remove();return 0;}
   if(LOWORD(wp)==SAVE_KEY)save_key();
   else if(LOWORD(wp)==DEFAULT_KEY){SendMessageW(key_field,HKM_SETHOTKEY,key_word((struct WKey){VK_F1,0}),0);SetWindowTextW(note_label,ui_text(L"Đã chọn F1. Bấm Lưu để áp dụng.",L"Default selected. Click Save to apply it."));}
@@ -174,7 +179,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
   if(lp==WM_LBUTTONUP)show_panel();
   if(lp==WM_RBUTTONUP){HMENU popup=CreatePopupMenu();AppendMenuW(popup,MF_STRING,OPEN_APP,ui_text(L"Mở menu",L"Open menu"));AppendMenuW(popup,MF_STRING,EXIT_APP,ui_text(L"Thoát",L"Exit"));POINT point;GetCursorPos(&point);SetForegroundWindow(hwnd);TrackPopupMenu(popup,TPM_RIGHTBUTTON,point.x,point.y,0,hwnd,NULL);DestroyMenu(popup);PostMessageW(hwnd,WM_NULL,0,0);}return 0;
  case WM_TIMER:
-  if(wp==1){trial_poll();poll_game();if(IsWindowVisible(hwnd))center_panel();}
+  if(wp==1){trial_poll();poll_game();live_poll();if(IsWindowVisible(hwnd))center_panel();}
   if(wp==2&&!key_registered&&!key_editing){static BOOL previous;BOOL down=fallback_menu_down();if(down&&!previous){if(IsWindowVisible(hwnd))ShowWindow(hwnd,SW_HIDE);else show_panel();}previous=down;}return 0;
  case WM_NCHITTEST:{LRESULT hit=DefWindowProcW(hwnd,msg,wp,lp);return hit==HTCAPTION?HTCLIENT:hit;}
  case WM_SYSCOMMAND:if((wp&0xfff0)==SC_MOVE||(wp&0xfff0)==SC_SIZE)return 0;break;
@@ -190,7 +195,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
 
  case WM_CLOSE:ShowWindow(hwnd,SW_HIDE);return 0;
  case WM_DESTROY:
-  tracking=FALSE;trial_shutdown();KillTimer(hwnd,1);KillTimer(hwnd,2);suspend_key();if(tray_added)Shell_NotifyIconW(NIM_DELETE,&tray);ui_ready=FALSE;PostQuitMessage(0);return 0;
+  tracking=FALSE;live_shutdown();trial_shutdown();KillTimer(hwnd,1);KillTimer(hwnd,2);suspend_key();if(tray_added)Shell_NotifyIconW(NIM_DELETE,&tray);ui_ready=FALSE;PostQuitMessage(0);return 0;
  }
  return DefWindowProcW(hwnd,msg,wp,lp);
 }
@@ -216,7 +221,7 @@ int WINAPI wWinMain(HINSTANCE module,HINSTANCE previous,PWSTR command,int show){
  WNDCLASSW klass={0};klass.hInstance=module;klass.lpfnWndProc=window_proc;klass.lpszClassName=APP_CLASS;klass.hCursor=LoadCursorW(NULL,IDC_ARROW);klass.hIcon=LoadIconW(NULL,IDI_APPLICATION);klass.hbrBackground=background;
  if(!RegisterClassW(&klass)){CloseHandle(instance_mutex);return 3;}
  RECT desktop={0};SystemParametersInfoW(SPI_GETWORKAREA,0,&desktop,0);int menu_height=758;if(desktop.bottom-desktop.top>400&&desktop.bottom-desktop.top<790)menu_height=desktop.bottom-desktop.top-32;
- app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Recovery 0.4.1",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
+ app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Live alpha 0.5",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
  init_config();struct WKey saved;if(config_path[0]&&read_binding(config_path,&saved))menu_key=saved;
  load_game_path();trial_cd=trial_damage=FALSE;trial_save(FALSE,FALSE);
  ui_create();

@@ -99,7 +99,7 @@ def lifecycle(exe,fixture):
                     body=hotkey_field(hwnd,'WuWaPCContent')
                     for control_id in (240,241):
                         text=ctypes.create_unicode_buffer(160);user.GetWindowTextW(user.GetDlgItem(body,control_id),text,160)
-                        assert text.value=='Suspended','Suspended trial was shown as available'
+                        assert text.value==('Enable in session' if control_id==240 else 'Unavailable'),'Unexpected live/unsupported control label'
                         assert not user.IsWindowEnabled(user.GetDlgItem(body,control_id))
                 user.SendMessageW(hwnd,0x0111,204,0) # Footer Change shortcut
                 assert user.IsWindowVisible(field)
@@ -134,6 +134,20 @@ def lifecycle(exe,fixture):
             assert original.read_bytes()==b'synthetic unsupported package'
             assert not trial.exists() and not manifest.exists()
             assert 'Flags=0' in settings.read_text()
+            # The real menu launches the frozen session controller. Our fixture
+            # is deliberately an unsupported EXE and must never show active hooks.
+            user.PostMessageW(hwnd,0x8002,0,0)
+            wait_until(lambda:user.IsWindowVisible(hwnd),'Live menu did not reopen')
+            user.SendMessageW(hwnd,0x0111,200,0)
+            user.SendMessageW(hwnd,0x0111,240,0)
+            live_result=settings.parent/'live-result.ini'
+            wait_until(lambda:live_result.exists() and 'UNSUPPORTED_EXE_BUILD' in live_result.read_text(encoding='utf-16'),
+                       'Frozen live controller did not reject the synthetic game',seconds=35)
+            body=hotkey_field(hwnd,'WuWaPCContent');button=user.GetDlgItem(body,240)
+            def live_off():
+                text=ctypes.create_unicode_buffer(160);user.GetWindowTextW(button,text,160)
+                return text.value=='Bật trong game' and user.IsWindowEnabled(button)
+            wait_until(live_off,'Failed live request was falsely shown as active',seconds=10)
             fake=user.FindWindowW('UnrealWindow','Synthetic launcher fixture');user.PostMessageW(fake,0x0010,0,0)
             wait_until(lambda:not user.FindWindowW('UnrealWindow','Synthetic launcher fixture'),'Synthetic game did not close')
             user.PostMessageW(hwnd,0x0111,103,0);assert child.wait(timeout=10)==0

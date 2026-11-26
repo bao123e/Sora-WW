@@ -1,0 +1,45 @@
+name: Build and verify live No Cooldown alpha
+on:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: '0.14.1'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
+      - name: Build dependencies
+        run: python -m pip install -r tools/gameplay-prototype/requirements.txt pyinstaller==6.16.0
+      - name: Build native menu
+        run: python scripts/build.py --zig zig
+      - name: Build existing rollback helper
+        run: python scripts/build_backend.py
+      - name: Build live bridge and test real managed detours
+        run: python scripts/build_runtime.py --zig zig
+      - name: Verify actual Windows remote load and secured pipe in our fixture
+        run: python scripts/verify_runtime_windows.py --zig zig
+      - name: Verify native menu and launch lifecycle
+        run: python scripts/verify_windows.py --zig zig
+      - name: Package alpha and source
+        run: python scripts/package.py
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sora-WW-live-no-cooldown-alpha
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            dist/live-build.json
+            dist/windows-verification.json
+            dist/ui-preview-*.png
