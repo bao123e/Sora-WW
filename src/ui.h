@@ -1,6 +1,8 @@
 /* SPDX-License-Identifier: MIT */
 #ifndef WUWA_UI_H
 #define WUWA_UI_H
+#define UI_BROWSE_GAME 230
+#define UI_LAUNCH_GAME 231
 #define UI_GENERAL 200
 #define UI_KEYS 201
 #define UI_PIN 202
@@ -18,7 +20,7 @@ static int ui_language,ui_tab,ui_scroll[2],ui_opacity=94;
 static BOOL ui_pinned=TRUE,ui_ready,ui_dragging;
 static int ui_drag_start,ui_drag_offset;
 static HWND ui_body,ui_hover,ui_buttons[10];
-static HWND ui_general_controls[2],ui_key_controls[4];
+static HWND ui_general_controls[4],ui_key_controls[4];
 static HBRUSH ui_field_brush,ui_status_brush;
 static HFONT ui_small_font;
 static WNDPROC ui_original_button;
@@ -31,7 +33,7 @@ static void ui_section(HDC dc,const wchar_t *text,int y,int width){
  RECT label={0,y,width,y+24};SIZE size;GetTextExtentPoint32W(dc,text,(int)wcslen(text),&size);ui_label(dc,text,label,RGB(225,226,229),DT_LEFT|DT_SINGLELINE|DT_VCENTER);
  HPEN pen=CreatePen(PS_SOLID,2,RGB(61,64,72));HGDIOBJ old=SelectObject(dc,pen);MoveToEx(dc,size.cx+12,y+12,NULL);LineTo(dc,width,y+12);SelectObject(dc,old);DeleteObject(pen);
 }
-static int ui_content_height(void){return ui_tab?470:680;}
+static int ui_content_height(void){return ui_tab?470:818;}
 static int ui_scroll_max(void){RECT r;GetClientRect(ui_body,&r);int maximum=ui_content_height()-r.bottom;return maximum>0?maximum:0;}
 static void ui_layout(void);
 static void ui_scroll_to(int next){int maximum=ui_scroll_max();if(next<0)next=0;if(next>maximum)next=maximum;if(next!=ui_scroll[ui_tab]){ui_scroll[ui_tab]=next;ui_layout();InvalidateRect(ui_body,NULL,FALSE);}}
@@ -51,18 +53,20 @@ static void ui_draw_body(HDC dc){
   ui_label(dc,ui_text(L"Tiến trình",L"Process"),(RECT){0,112,170,138},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,matches==1?L"Client-Win64-Shipping.exe":L"—",(RECT){178,112,width,138},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER|DT_END_ELLIPSIS);
   ui_label(dc,ui_text(L"Chế độ",L"Mode"),(RECT){0,150,170,176},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_text(L"Chỉ đọc thông tin cửa sổ",L"Window information only"),(RECT){178,150,width,176},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER);
-  ui_section(dc,ui_text(L"Giao diện",L"Appearance"),210,width);
-  ui_label(dc,ui_text(L"Độ đậm menu",L"Menu opacity"),(RECT){0,250,170,280},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_text(L"Luôn ở trên cùng",L"Always on top"),(RECT){0,298,170,326},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_pinned?ui_text(L"Đang ghim",L"Pinned"):ui_text(L"Không ghim",L"Unpinned"),(RECT){178,298,width,326},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_text(L"Dùng nút Ghim trên thanh tiêu đề để thay đổi.",L"Use Pin in the title bar to change this."),(RECT){0,340,width,366},RGB(128,134,145),DT_SINGLELINE|DT_VCENTER);
-  ui_section(dc,ui_text(L"Điều khiển",L"Controls"),398,width);
-  ui_label(dc,ui_text(L"Phím mở / ẩn menu",L"Show / hide menu"),(RECT){0,438,178,466},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
-  wchar_t binding[128];key_name(menu_key,binding,128);ui_label(dc,binding,(RECT){178,438,width,466},RGB(225,230,239),DT_SINGLELINE|DT_VCENTER);
-  ui_section(dc,ui_text(L"Phiên bản thử giao diện",L"Interface preview"),542,width);
-  ui_label(dc,ui_text(L"Bản này chưa có chức năng gameplay.",L"Gameplay features are not available in this build."),(RECT){0,578,width,606},RGB(233,179,60),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_text(L"Nút × chỉ ẩn menu. Chọn Thoát để đóng ứng dụng.\nCác thiết lập được lưu cho lần mở tiếp theo.",L"The × button hides the menu. Use Exit to close the app.\nYour preferences are remembered for the next launch."),(RECT){0,616,width,664},RGB(145,150,159),DT_WORDBREAK);
+  ui_label(dc,ui_text(L"Mở game và nhận diện cửa sổ",L"Launch and window detection"),(RECT){178,150,width,176},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER);
+  ui_label(dc,game_path[0]?game_path:ui_text(L"Chưa chọn EXE",L"No EXE selected"),(RECT){0,236,width,264},RGB(165,174,188),DT_SINGLELINE|DT_VCENTER|DT_PATH_ELLIPSIS);
+  ui_label(dc,launch_notice,(RECT){0,274,width,328},RGB(185,204,225),DT_WORDBREAK);
+  ui_section(dc,ui_text(L"Giao diện",L"Appearance"),348,width);
+  ui_label(dc,ui_text(L"Độ đậm menu",L"Menu opacity"),(RECT){0,388,170,418},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
+  ui_label(dc,ui_text(L"Luôn ở trên cùng",L"Always on top"),(RECT){0,436,170,464},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
+  ui_label(dc,ui_pinned?ui_text(L"Đang ghim",L"Pinned"):ui_text(L"Không ghim",L"Unpinned"),(RECT){178,436,width,464},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER);
+  ui_label(dc,ui_text(L"Dùng nút Ghim trên thanh tiêu đề để thay đổi.",L"Use Pin in the title bar to change this."),(RECT){0,478,width,504},RGB(128,134,145),DT_SINGLELINE|DT_VCENTER);
+  ui_section(dc,ui_text(L"Điều khiển",L"Controls"),536,width);
+  ui_label(dc,ui_text(L"Phím mở / ẩn menu",L"Show / hide menu"),(RECT){0,576,178,604},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
+  wchar_t binding[128];key_name(menu_key,binding,128);ui_label(dc,binding,(RECT){178,576,width,604},RGB(225,230,239),DT_SINGLELINE|DT_VCENTER);
+  ui_section(dc,ui_text(L"Bản thử launcher",L"Launcher preview"),680,width);
+  ui_label(dc,ui_text(L"Bản này chưa có chức năng gameplay.",L"Gameplay features are not available in this build."),(RECT){0,716,width,744},RGB(233,179,60),DT_SINGLELINE|DT_VCENTER);
+  ui_label(dc,ui_text(L"Nút × chỉ ẩn menu. Chọn Thoát để đóng ứng dụng.\nCác thiết lập được lưu cho lần mở tiếp theo.",L"The × button hides the menu. Use Exit to close the app.\nYour preferences are remembered for the next launch."),(RECT){0,754,width,802},RGB(145,150,159),DT_WORDBREAK);
  }else{
   ui_section(dc,ui_text(L"Phím menu",L"Menu shortcut"),0,width);
   ui_label(dc,ui_text(L"Hiện / ẩn menu",L"Show / hide menu"),(RECT){0,50,172,82},RGB(165,170,178),DT_SINGLELINE|DT_VCENTER);
@@ -77,7 +81,7 @@ static void ui_paint_body(HWND hwnd,HDC supplied){
 static void ui_main_paint(HWND hwnd,HDC supplied){
  PAINTSTRUCT paint;HDC target=supplied?supplied:BeginPaint(hwnd,&paint);RECT r;GetClientRect(hwnd,&r);HDC dc=CreateCompatibleDC(target);HBITMAP bitmap=CreateCompatibleBitmap(target,r.right>0?r.right:1,r.bottom>0?r.bottom:1);HGDIOBJ old=SelectObject(dc,bitmap);
  ui_fill(dc,r,ui_bg());ui_fill(dc,(RECT){0,0,r.right,30},RGB(42,72,111));SelectObject(dc,font);
- ui_label(dc,L"Sora WW  0.2",(RECT){32,0,r.right-125,30},RGB(242,246,251),DT_SINGLELINE|DT_VCENTER);
+ ui_label(dc,L"Sora WW  0.3",(RECT){32,0,r.right-125,30},RGB(242,246,251),DT_SINGLELINE|DT_VCENTER);
  HPEN logo=CreatePen(PS_SOLID,2,RGB(220,236,255));HGDIOBJ previous=SelectObject(dc,logo);MoveToEx(dc,9,10,NULL);LineTo(dc,13,21);LineTo(dc,17,12);LineTo(dc,21,21);LineTo(dc,25,10);SelectObject(dc,previous);DeleteObject(logo);
  HPEN separator=CreatePen(PS_SOLID,1,RGB(59,62,69));previous=SelectObject(dc,separator);MoveToEx(dc,14,80,NULL);LineTo(dc,r.right-14,80);MoveToEx(dc,14,r.bottom-50,NULL);LineTo(dc,r.right-14,r.bottom-50);SelectObject(dc,previous);DeleteObject(separator);
  BitBlt(target,0,0,r.right,r.bottom,dc,0,0,SRCCOPY);SelectObject(dc,old);DeleteObject(bitmap);DeleteDC(dc);if(!supplied)EndPaint(hwnd,&paint);
@@ -114,7 +118,8 @@ static void ui_layout(void){
  if(!ui_ready)return;RECT r;GetClientRect(app,&r);int height=r.bottom-142;if(height<150)height=150;
  ui_place(ui_buttons[0],14,40,118,40);ui_place(ui_buttons[1],140,40,108,40);ui_place(ui_buttons[2],r.right-98,3,60,24);ui_place(ui_buttons[3],r.right-34,0,32,30);ui_place(ui_body,14,88,r.right-28,height);
  int max=ui_scroll_max();if(ui_scroll[ui_tab]>max)ui_scroll[ui_tab]=max;int offset=14-ui_scroll[ui_tab],width=r.right-74;
- ui_place(status_label,44,offset+44,width-46,48);ui_place(ui_general_controls[0],194,offset+248,246,32);ui_place(ui_general_controls[1],194,offset+484,140,32);
+ ui_place(status_label,44,offset+44,width-46,48);ui_place(ui_general_controls[0],194,offset+386,246,32);ui_place(ui_general_controls[1],194,offset+622,140,32);
+ ui_place(ui_general_controls[2],16,offset+192,166,32);ui_place(ui_general_controls[3],194,offset+192,166,32);
  ui_place(key_field,194,offset+50,246,32);ui_place(ui_key_controls[0],194,offset+96,116,32);ui_place(ui_key_controls[1],322,offset+96,118,32);ui_place(note_label,16,offset+154,width,78);
  wchar_t binding[256];GetWindowTextW(key_label,binding,256);HDC dc=GetDC(app);SelectObject(dc,font);SIZE size;GetTextExtentPoint32W(dc,binding,(int)wcslen(binding),&size);ReleaseDC(app,dc);int key_width=size.cx+4;if(key_width>260)key_width=260;
  ui_place(key_label,14,r.bottom-36,key_width,26);ui_place(ui_buttons[4],24+key_width,r.bottom-39,88,32);ui_place(ui_buttons[5],122+key_width,r.bottom-39,164,32);ui_place(ui_buttons[6],r.right-94,r.bottom-39,80,32);
@@ -122,7 +127,7 @@ static void ui_layout(void){
 }
 static void ui_switch_tab(int tab,BOOL focus_key){
  if(!ui_ready)return;if(tab!=ui_tab&&GetFocus()==key_field)SetFocus(app);ui_tab=tab;
- ShowWindow(status_label,tab?SW_HIDE:SW_SHOW);for(int i=0;i<2;i++)ShowWindow(ui_general_controls[i],tab?SW_HIDE:SW_SHOW);
+ ShowWindow(status_label,tab?SW_HIDE:SW_SHOW);for(int i=0;i<4;i++)ShowWindow(ui_general_controls[i],tab?SW_HIDE:SW_SHOW);
  ShowWindow(key_field,tab?SW_SHOW:SW_HIDE);ShowWindow(note_label,tab?SW_SHOW:SW_HIDE);for(int i=0;i<2;i++)ShowWindow(ui_key_controls[i],tab?SW_SHOW:SW_HIDE);
  ui_layout();InvalidateRect(ui_buttons[0],NULL,FALSE);InvalidateRect(ui_buttons[1],NULL,FALSE);if(focus_key){SetFocus(key_field);}
 }
@@ -130,6 +135,7 @@ static void ui_set_alpha(void){SetLayeredWindowAttributes(app,0,(BYTE)(255*ui_op
 static void ui_save_appearance(void){if(config_path[0]){wchar_t opacity[8];swprintf(opacity,8,L"%d",ui_opacity);WritePrivateProfileStringW(L"Appearance",L"Opacity",opacity,config_path);WritePrivateProfileStringW(L"Appearance",L"Language",ui_language?L"en":L"vi",config_path);WritePrivateProfileStringW(L"Appearance",L"Pinned",ui_pinned?L"1":L"0",config_path);}}
 static void ui_apply_language(void){
  if(!ui_ready)return;SetWindowTextW(ui_buttons[0],ui_text(L"Tổng quan",L"Overview"));SetWindowTextW(ui_buttons[1],ui_text(L"Phím tắt",L"Keybinds"));SetWindowTextW(ui_buttons[2],ui_text(L"Ghim",L"Pin"));SetWindowTextW(ui_buttons[3],L"×");SetWindowTextW(ui_buttons[4],ui_text(L"Đổi phím",L"Change"));SetWindowTextW(ui_buttons[5],ui_language?L"English":L"Tiếng Việt");SetWindowTextW(ui_buttons[6],ui_text(L"Thoát",L"Exit"));SetWindowTextW(ui_general_controls[1],ui_text(L"Đổi phím",L"Change shortcut"));SetWindowTextW(ui_key_controls[0],ui_text(L"Lưu",L"Save"));SetWindowTextW(ui_key_controls[1],ui_text(L"Mặc định",L"Default"));
+ SetWindowTextW(ui_general_controls[2],ui_text(L"Chọn EXE…",L"Choose EXE…"));SetWindowTextW(ui_general_controls[3],ui_text(L"Mở game",L"Open game"));
  wchar_t opacity[12];swprintf(opacity,12,L"%d%%",ui_opacity);SetWindowTextW(ui_general_controls[0],opacity);SetWindowTextW(note_label,ui_text(L"Bấm ô phím và nhấn tổ hợp muốn dùng, sau đó bấm Lưu.",L"Click the shortcut field, press your key combination, then Save."));update_key_text();poll_game();ui_layout();
 }
 static void ui_popup(HWND button,BOOL language){
@@ -168,6 +174,7 @@ static void ui_create(void){
  ui_body=CreateWindowExW(WS_EX_CONTROLPARENT,klass.lpszClassName,L"",WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,14,88,682,616,app,NULL,instance,NULL);
  const int ids[]={UI_GENERAL,UI_KEYS,UI_PIN,UI_HIDE,UI_CHANGE_KEY,UI_LANGUAGE,EXIT_APP};for(int i=0;i<7;i++)ui_buttons[i]=ui_child(app,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,ids[i]);
  status_label=ui_child(ui_body,L"STATIC",L"",0,0);ui_general_controls[0]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_OPACITY);ui_general_controls[1]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_CHANGE_KEY);
+ ui_general_controls[2]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_BROWSE_GAME);ui_general_controls[3]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_LAUNCH_GAME);
  key_field=ui_child(ui_body,HOTKEY_CLASSW,L"",WS_TABSTOP,0);SendMessageW(key_field,HKM_SETRULES,0,0);SendMessageW(key_field,HKM_SETHOTKEY,key_word(menu_key),0);old_key_proc=(WNDPROC)SetWindowLongPtrW(key_field,GWLP_WNDPROC,(LONG_PTR)key_proc);
  ui_key_controls[0]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,SAVE_KEY);ui_key_controls[1]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,DEFAULT_KEY);note_label=ui_child(ui_body,L"STATIC",L"",0,0);key_label=ui_child(app,L"STATIC",L"",0,0);
  wchar_t language[8];GetPrivateProfileStringW(L"Appearance",L"Language",L"vi",language,8,config_path);ui_language=!wcscmp(language,L"en");ui_opacity=GetPrivateProfileIntW(L"Appearance",L"Opacity",94,config_path);if(ui_opacity<85||ui_opacity>100)ui_opacity=94;ui_pinned=GetPrivateProfileIntW(L"Appearance",L"Pinned",1,config_path)!=0;

@@ -1,21 +1,22 @@
-# WuWa PC — bước 1: menu và cửa sổ
+# WuWa PC — menu và mở game
 
-Bản 0.2.0-ui-preview chỉ kiểm tra khung chương trình Windows. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
+Bản 0.3.0-launcher-preview thêm chọn/lưu EXE và mở game từ menu. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
 - Launcher chính thức: 3.1.0.1.
 - Màn hình game: `OS_Windows_Product_3.8.0_9244589_3.8.13_9534983 * SD`.
 - Khu vực SEA.
-- Chủ tool cho biết game dùng UE4; chưa xác minh phiên bản engine hoặc API đồ họa bằng binary. Chuỗi trên là bằng chứng từ ảnh màn hình, không phải chứng nhận tương thích executable.
+- EXE đã gửi có tài nguyên phiên bản UE4 4.26; chưa xác minh API đồ họa khi game chạy. Chuỗi trên là bằng chứng từ ảnh màn hình, không phải chứng nhận tương thích executable.
 
 ## Dùng thử
 
-1. Giải nén toàn bộ gói vào một thư mục riêng. Chạy game bằng launcher như bình thường; để chế độ cửa sổ hoặc không viền để thử menu.
-2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần chọn file game hoặc gửi file game lớn.
+1. Giải nén toàn bộ gói vào một thư mục riêng. Để game ở chế độ cửa sổ hoặc không viền để dùng menu.
+2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần gửi file game lớn.
 3. Menu mặc định ẩn. Nhấn **F1**, hoặc nhấp biểu tượng WuWa PC dưới khay hệ thống để mở.
-4. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
-5. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
+4. Trong Tổng quan, chọn **Chọn EXE…**, tới `Client\Binaries\Win64\Client-Win64-Shipping.exe` của bản cài đặt. Đường dẫn được lưu riêng cùng cấu hình, hỗ trợ thư mục có dấu. Bấm **Mở game** để mở EXE đã chọn. Nếu game yêu cầu launcher chính thức, dùng launcher đó; tool vẫn nhận diện cửa sổ của EXE đã chọn. Menu chỉ tự ẩn sau khi thấy cửa sổ game, không dựa vào thời gian tải cố định. Bấm mở nhiều lần sẽ không mở thêm phiên khi tiến trình game đang chạy.
+5. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
+6. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
 
 Phím được lưu tại `%LOCALAPPDATA%\WuWaPC\settings.ini`, riêng cho sản phẩm này. Không dùng key, issuer hoặc cấu hình thanh toán của SoraVynx.
 
@@ -32,7 +33,7 @@ Nền tối có độ trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Ph�
 - Đổi phím, thoát hẳn, mở lại: phím có được giữ không?
 - Dòng trạng thái có hiện **Game window found (read only)** không? Nếu chưa, gửi đúng dòng trạng thái; chưa cần gửi đường dẫn hoặc file game.
 
-Bộ dò chỉ đọc lớp cửa sổ, tên tiến trình và thông tin cửa sổ. Nó đòi hỏi `UnrealWindow`, executable `Client-Win64-Shipping.exe` và tên cửa sổ/thư mục phù hợp Wuthering Waves. Nhiều cửa sổ khớp hoặc không xác minh được executable sẽ không tự chọn. Không yêu cầu quyền quản trị để vượt lỗi nhận diện.
+Bộ dò chỉ đọc lớp cửa sổ, tên tiến trình và thông tin cửa sổ. Nó đòi hỏi `UnrealWindow` và executable `Client-Win64-Shipping.exe`. Khi đã chọn EXE, đường dẫn tiến trình phải khớp đường dẫn đã lưu; khi chưa chọn, nó dùng thêm tên cửa sổ/thư mục phù hợp Wuthering Waves. Nhiều cửa sổ khớp hoặc không xác minh được executable sẽ không tự chọn. Không yêu cầu quyền quản trị để vượt lỗi nhận diện. Nếu di chuyển hoặc cập nhật game sang vị trí khác, dùng Chọn EXE để chọn lại. Nếu sau hai phút chưa thấy cửa sổ, tool hiện thông báo để bạn kiểm tra game; không tự mở lại liên tục.
 
 Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không tạo log/ảnh màn hình. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
 

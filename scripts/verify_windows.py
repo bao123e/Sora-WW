@@ -105,12 +105,16 @@ def main(zig):
     exe=ROOT/'dist/WuWa-PC.exe'
     subprocess.run([str(exe),'--self-test'],check=True,timeout=30)
     with tempfile.TemporaryDirectory(prefix='wuwa-native-') as directory:
-        for name,libs in [('core_test',[]),('windows_test',['-luser32','-lgdi32','-lshell32','-lcomctl32'])]:
+        fixture=Path(directory)/'Thử nghiệm 游戏'/'Client-Win64-Shipping.exe'
+        fixture.parent.mkdir()
+        subprocess.run([zig,'cc','-target','x86_64-windows-gnu','-std=c11','-O2','-Wall','-Wextra','-Werror','-municode','-Wl,--subsystem,windows',str(ROOT/'tests/launcher_fixture.c'),'-luser32','-o',str(fixture)],check=True)
+        fixture_env=os.environ.copy();fixture_env['WUWA_TEST_GAME']=str(fixture)
+        for name,libs in [('core_test',[]),('windows_test',['-luser32','-lgdi32','-lshell32','-lcomctl32','-lcomdlg32'])]:
             out=Path(directory)/(name+'.exe')
             subprocess.run([zig,'cc','-target','x86_64-windows-gnu','-std=c11','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-UNDEBUG',str(ROOT/'tests'/f'{name}.c'),*libs,'-o',str(out)],check=True)
-            subprocess.run([str(out)],check=True,timeout=45)
+            subprocess.run([str(out)],check=True,timeout=45,env=fixture_env)
     lifecycle(exe)
-    report={'exe_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'commit':os.environ.get('GITHUB_SHA'),'verification_url':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",'windows_runtime_tested':True,'game_runtime_tested':False,'tests':['packaged_exe_self_test','native_core_and_key_transaction','native_controls_conflict_save_rollback_and_geometry','actual_exe_hidden_start_show_hide_exit_and_key_persistence','reference_style_tabs_language_pin_opacity_and_persistence','own_app_ui_previews_no_game_capture']}
+    report={'exe_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'commit':os.environ.get('GITHUB_SHA'),'verification_url':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",'windows_runtime_tested':True,'game_runtime_tested':False,'tests':['packaged_exe_self_test','native_core_and_key_transaction','native_controls_conflict_save_rollback_and_geometry','actual_exe_hidden_start_show_hide_exit_and_key_persistence','reference_style_tabs_language_pin_opacity_and_persistence','own_app_ui_previews_no_game_capture','unicode_game_path_persistence_and_corrupt_config','synthetic_game_launch_wait_duplicate_guard_auto_hide_and_timeout']}
     (ROOT/'dist/windows-verification.json').write_text(json.dumps(report,indent=2)+'\n')
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--zig',default='zig');main(p.parse_args().zig)
