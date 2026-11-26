@@ -36,10 +36,35 @@
         "imported_ordinals": [
           1
         ],
-        "inspected": false
+        "inspected": true,
+        "bytes": 38673736,
+        "sha256": "9ceb2e6f4a2e8d579003374cef95071b3b1de0a64968166a0b457c5af0cfb63c",
+        "architecture": "AMD64",
+        "is_dll": true,
+        "required_ordinal_present": true,
+        "resource_version_available": false,
+        "same_build_pair_verified": false
       }
     ],
-    "puerts_identifiers_present": true
+    "puerts_identifiers_present": true,
+    "script_path_tokens": {
+      "Aki/JavaScript": {
+        "ascii": 1,
+        "utf-16-le": 1
+      },
+      "Content/JavaScript": {
+        "ascii": 1,
+        "utf-16-le": 0
+      },
+      "KuroAnimJsSubsystem": {
+        "ascii": 7,
+        "utf-16-le": 2
+      },
+      "KuroPuertsWrapper": {
+        "ascii": 1,
+        "utf-16-le": 3
+      }
+    }
   },
   "gameplay": {
     "god_mode": {
@@ -59,12 +84,47 @@
     "No runtime gameplay function target has been verified from this file.",
     "A cooldown-related identifier alone does not establish player skill cooldown behavior.",
     "Puerts binding identifiers do not by themselves establish where game-specific gameplay logic resides.",
-    "The EXE imports only the uninspected companion module by ordinal; matching companion data is required before further conclusions."
+    "The required DLL and export ordinal match structurally; no DLL version resource establishes a matching game build or gameplay behavior.",
+    "The companion contains a large .tvm0 code section and exposes only ordinal 1; its role and gameplay targets have not been established by static inspection."
   ],
-  "next_required_file": {
+  "next_required_file": null,
+  "repository_contains_game_binary": false,
+  "companion_module": {
     "filename": "Client-Win64-ShippingBase.dll",
-    "expected_relative_directory": "Client/Binaries/Win64",
-    "requirement": "Must come from the same installed game build as the supplied EXE."
+    "archive_read_completed_without_error": true,
+    "archive_sha256": "db4e7b662262657e1576696964365f6d052e136593d7ae17c9c27b797bf3b7e8",
+    "section_names": [
+      ".text",
+      ".rdata",
+      ".data",
+      ".pdata",
+      ".tls",
+      ".gfids",
+      ".reloc",
+      ".tvm0",
+      ".-v:",
+      ".iCZ"
+    ],
+    "imports": [
+      {
+        "dll": "kernel32.dll",
+        "count": 1,
+        "sample": [
+          "LoadLibraryA"
+        ]
+      }
+    ],
+    "exports": [
+      {
+        "ordinal": 1,
+        "name": null,
+        "forwarder": null
+      }
+    ],
+    "runtime_execution_performed": false
   },
-  "repository_contains_game_binary": false
+  "next_information": {
+    "requested": "Names of directories directly under Client/Content and whether Client/Content/Aki/JavaScript exists.",
+    "reason": "The supplied EXE contains Aki/JavaScript path tokens and Kuro/Puerts bindings; the game script/container layout must be identified before requesting additional large data."
+  }
 }
