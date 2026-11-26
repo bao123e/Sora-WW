@@ -1,0 +1,257 @@
+{
+  "inspection_date": "2026-11-26",
+  "source_pak": {
+    "name": "pakchunk18-WindowsNoEditor.pak",
+    "bytes": 105427118,
+    "sha256": "b8ed535f6d741e198e304f998a0f39198503e0b857d86315446ea442d3ea3a13",
+    "footer_matches_prior_owner_report": true,
+    "rar_parts_decoded_successfully": true
+  },
+  "entry_layout": {
+    "header_bytes": 53,
+    "alignment_bytes_before_pe": 11,
+    "size_and_sha1_region": "PE bytes starting at MZ; alignment excluded",
+    "plaintext_entry_sha1_checks_passed": 7,
+    "encrypted_index_decrypted": false,
+    "reader_v1_failure_cause": "V1 included the 11 alignment bytes in the size/hash region, incorrectly rejecting plaintext entries."
+  },
+  "assemblies": [
+    {
+      "source_offset": 103698496,
+      "name": "Aki.UnitTest",
+      "version": "1.0.0.0",
+      "mvid": "95f29418-5054-4810-a8f7-f29892fc0942",
+      "bytes": 90624,
+      "sha256": "e39de04305450c178b81c6728f3205ed26f4eab91bd8a159ef3f5fa6c3b1e44a",
+      "types": 78,
+      "methods": 312
+    },
+    {
+      "source_offset": 161856,
+      "name": "Aki.Core",
+      "version": "1.0.0.0",
+      "mvid": "df5298bb-ebca-409c-bc4f-eb79b0d1aa3e",
+      "bytes": 705024,
+      "sha256": "7b262cff2d6fab20ad9a2d8be1e3e462da0f11e39fcc7fb8a31fbedb352fc22b",
+      "types": 494,
+      "methods": 3620
+    },
+    {
+      "source_offset": 55035968,
+      "name": "Aki.Generated",
+      "version": "1.0.0.0",
+      "mvid": "e10425f0-845d-4875-b932-c42c7600ef74",
+      "bytes": 9977856,
+      "sha256": "41a295ecae08ef8420f5bfa9571898edf059876b7402d5c70a4df76888d83e5c",
+      "types": 7296,
+      "methods": 83205
+    },
+    {
+      "source_offset": 64,
+      "name": "Aki.Common",
+      "version": "1.0.0.0",
+      "mvid": "e81c6d6e-d2a4-4190-9109-65d4c411961d",
+      "bytes": 161280,
+      "sha256": "aea50983c15b6ccbc2b2f51ffc3767ddc70570a13a77062b384e0b7192c65b1d",
+      "types": 115,
+      "methods": 668
+    },
+    {
+      "source_offset": 65015872,
+      "name": "Aki.Protocol",
+      "version": "1.0.0.0",
+      "mvid": "3ce7fa6f-09e8-4518-a19f-4ddeec619c45",
+      "bytes": 13444608,
+      "sha256": "7269d8d9f2f004a550dba5762565148939c1a02be25200898cf7d73dbf21319a",
+      "types": 6827,
+      "methods": 124393
+    },
+    {
+      "source_offset": 78460992,
+      "name": "Aki.TdInterface",
+      "version": "1.0.0.0",
+      "mvid": "d07a3bb8-7728-4a40-9ef9-873dd86e8563",
+      "bytes": 25236480,
+      "sha256": "e77f71ad8ee350eecc474470915cfbe9156aacb558cb870ee33d5599919f90c2",
+      "types": 34587,
+      "methods": 242737
+    },
+    {
+      "source_offset": 868416,
+      "name": "Aki.Game",
+      "version": "1.0.0.0",
+      "mvid": "2ea7a717-61c0-4953-9f6c-13b1ec3564cd",
+      "bytes": 54166016,
+      "sha256": "b79969a511de727ae9444382387294e144522e28a433b2e7c1f4b3eceef2a74f",
+      "types": 48518,
+      "methods": 298313
+    }
+  ],
+  "method_evidence": [
+    {
+      "type": "BaseDamageComponent",
+      "method": "ProcessDamage",
+      "token": "0x6016f3e",
+      "body_sha256": "527d26165315ef8004139a018782654adae94c9b6338d871234d50dd47f3dd6d",
+      "instruction_count": 215
+    },
+    {
+      "type": "BaseDamageComponent",
+      "method": "ProcessRemoteDamage",
+      "token": "0x6016f40",
+      "body_sha256": "b3ac80527a1af16d8a65cb568a6140e0d8e503baa144a6cc7b204a1f913d2424",
+      "instruction_count": 313
+    },
+    {
+      "type": "BaseDamageComponent",
+      "method": "GetServerDamage",
+      "token": "0x6016f44",
+      "body_sha256": "588b63fadb5722e59d23a933eb4aa28250803bf02b7845ee5ca01a3d5b67310e",
+      "instruction_count": 300
+    },
+    {
+      "type": "BaseDamageComponent",
+      "method": "GetServerDamageCallBack",
+      "token": "0x6016f45",
+      "body_sha256": "f7c168679a199a348f8d63eaaec8175dbedcf1c9d9aae0a9f69f4b766f977274",
+      "instruction_count": 59
+    },
+    {
+      "type": "CharacterDamageComponent",
+      "method": "FallInjure",
+      "token": "0x601719b",
+      "body_sha256": "260817cd668e98833d523db5e4c5a3fb7cbf4895deee2eaf5cdce0b84bb2c455",
+      "instruction_count": 135
+    },
+    {
+      "type": "CreatureDataComponent",
+      "method": "GetPlayerId",
+      "token": "0x6018409",
+      "body_sha256": "c2cf12345ff87febfbacc37277576fec69af5f7def669e56f88ba9747abd0deb",
+      "instruction_count": 3
+    },
+    {
+      "type": "CreatureDataComponent",
+      "method": "IsPlayer",
+      "token": "0x601841d",
+      "body_sha256": "637efeb5f50fbde00cfcf9106c2a8c8d0b4d56a2e689ad15010ee41088c781d3",
+      "instruction_count": 5
+    },
+    {
+      "type": "BaseSkillComponent",
+      "method": "CheckSkillCanBegin",
+      "token": "0x6018c04",
+      "body_sha256": "6cb209bf6fbb74ded1cb7e838d0b8863cfb91b3cb72134d0877c2a1700b61966",
+      "instruction_count": 183
+    },
+    {
+      "type": "BaseSkillComponent",
+      "method": "IsSkillInCd",
+      "token": "0x6018c10",
+      "body_sha256": "01e25ee48dfb891b2489a8f5cbbc461d994afd8885277a165d916807793da875",
+      "instruction_count": 11
+    },
+    {
+      "type": "CharacterSkillCdComponent",
+      "method": "IsSkillInCd",
+      "token": "0x6018c9f",
+      "body_sha256": "ebdd1e60b6966cd0ecc9d80f26d690362b9d24b681c421e1cdb3e04903ba1a55",
+      "instruction_count": 19
+    },
+    {
+      "type": "CharacterSkillCdComponent",
+      "method": "ModifyCdTime",
+      "token": "0x6018ca1",
+      "body_sha256": "8f712bc21903723a062d6284e2779b61b6de728fdae78186e1501498b6ad21b1",
+      "instruction_count": 72
+    },
+    {
+      "type": "CharacterSkillCdComponent",
+      "method": "StartCd",
+      "token": "0x6018ca3",
+      "body_sha256": "ac30b8b35f3b79561cd2420058e2372b28f3024fbd8f6bfcf329983cd3b24cd5",
+      "instruction_count": 34
+    }
+  ],
+  "verified_local_findings": {
+    "cooldown": "Owner assembly contains both IsSkillInCd and StartCd; charge-count and group-timer paths are distinct.",
+    "damage_gate": "Owner ProcessDamage and FallInjure include invincibility checks.",
+    "damage_authority": "Owner ProcessDamage calls GetServerDamage; GetServerDamage calls CombatNet.Call; ProcessRemoteDamage reads DamageExecuteNotify.Damage and ChangeLife. ProcessDamage returns a toughness-related value, not validated HP damage."
+  },
+  "offline_experiment": {
+    "status": "OFFLINE_EXPERIMENT_NOT_GAME_VERIFIED",
+    "source_sha256": "b79969a511de727ae9444382387294e144522e28a433b2e7c1f4b3eceef2a74f",
+    "output_sha256": "e3e1861799d55f6fb25291c1bd5df733916dc862b95bada1950bb3d7f979986c",
+    "source_mvid": "2ea7a717-61c0-4953-9f6c-13b1ec3564cd",
+    "features": [
+      "ignore-local-damage",
+      "no-cooldown"
+    ],
+    "methods": [
+      {
+        "feature": "ignore-local-damage",
+        "method": "BaseDamageComponent.ProcessDamage",
+        "token": "0x6016f3e",
+        "original_body_sha256": "527d26165315ef8004139a018782654adae94c9b6338d871234d50dd47f3dd6d",
+        "original_code_sha256": "a3b13c870ed886dffa6c46629df79dbcdc27e444d747d5fc49cc93e0642a4e3b",
+        "new_body_sha256": "3f189f8d14898c64838c6304fd75a24158d492aa2265ddf4f7b5cabb5261ef8f",
+        "prefix_bytes": 104,
+        "new_rva": 54182400,
+        "original_fallback_preserved": true
+      },
+      {
+        "feature": "ignore-local-damage",
+        "method": "CharacterDamageComponent.FallInjure",
+        "token": "0x601719b",
+        "original_body_sha256": "260817cd668e98833d523db5e4c5a3fb7cbf4895deee2eaf5cdce0b84bb2c455",
+        "original_code_sha256": "92b6407af907834d06c3835b906290afa99751193fd6885cf6557680cac019df",
+        "new_body_sha256": "e5079662bc9873d56194aef10843e800eee63f1d8282674fe4aa07d53b1edb85",
+        "prefix_bytes": 99,
+        "new_rva": 54183084,
+        "original_fallback_preserved": true
+      },
+      {
+        "feature": "no-cooldown",
+        "method": "CharacterSkillCdComponent.IsSkillInCd",
+        "token": "0x6018c9f",
+        "original_body_sha256": "ebdd1e60b6966cd0ecc9d80f26d690362b9d24b681c421e1cdb3e04903ba1a55",
+        "original_code_sha256": "6f9a1712cc06c8a16f9b2e187a996f18e6e99986c94f5b57368cc40b8588d005",
+        "new_body_sha256": "d514215b41568a9a06f4d292787b1546f22793a8258af75052346f29da9c9b36",
+        "prefix_bytes": 100,
+        "new_rva": 54183600,
+        "original_fallback_preserved": true
+      },
+      {
+        "feature": "no-cooldown",
+        "method": "CharacterSkillCdComponent.StartCd",
+        "token": "0x6018ca3",
+        "original_body_sha256": "ac30b8b35f3b79561cd2420058e2372b28f3024fbd8f6bfcf329983cd3b24cd5",
+        "original_code_sha256": "2d77a100ff653a099aaa57aaf4fddbb30b710cfec5466cc96fc6d9c8c6cd14a2",
+        "new_body_sha256": "23e432555b408ff5b42a4574d3c0e49085be764b945ce7389f6e9ee7b2b15a1c",
+        "prefix_bytes": 100,
+        "new_rva": 54183752,
+        "original_fallback_preserved": true
+      }
+    ],
+    "installed_into_game": false,
+    "game_runtime_tested": false,
+    "damage_multiplier_implemented": false,
+    "limits": [
+      "No runtime toggle or loader implemented.",
+      "Server HP updates and other damage paths are not blocked or validated.",
+      "Existing skills, energy, charges, UI and replication require actual runtime verification."
+    ]
+  },
+  "offline_checks": {
+    "owner_guard_model_cases": 36,
+    "new_method_bodies_decode": true,
+    "branch_targets_are_instruction_boundaries": true,
+    "original_fallback_code_hashes_preserved": true,
+    "original_source_hash_unchanged": true,
+    "unknown_input_rejected": true,
+    "all_original_bytes_unchanged_except_allowlisted_header_and_method_rva_fields": true,
+    "actual_mono_execution_tested": false
+  },
+  "gameplay_ready": false,
+  "game_binaries_or_patched_dlls_published": false
+}

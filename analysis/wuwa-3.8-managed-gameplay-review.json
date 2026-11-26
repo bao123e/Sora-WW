@@ -100,7 +100,7 @@
       "owner_build_verified": false
     }
   },
-  "next_needed_evidence": "The loose file was not located. A read-only scanner is prepared for the already-inspected pakchunk18 (105427118 bytes, known footer SHA256). It accepts only unencrypted/uncompressed entries with matching entry SHA1, managed PE and assembly identity Aki.Game. Real source payload is not available in the cloud; no gameplay patch can be validated until this exact input is read.",
+  "next_needed_evidence": "Assembly input received and CIL inspected. Remaining work is actual Mono/loader and game-behavior validation; no additional arbitrary package upload requested.",
   "gameplay_implemented": false,
   "game_runtime_tested": false,
   "third_party_source_code_copied_into_repository": false,
@@ -116,9 +116,26 @@
     "reported_plain_entry_layout": {
       "header_bytes": 53,
       "zero_prefix_bytes": 11,
-      "mapped_assemblies_may_have_unencrypted_uncompressed_payload": true
+      "mapped_assemblies_may_have_unencrypted_uncompressed_payload": true,
+      "size_sha1_region_correction": "Actual input covers PE bytes only; the 11 zeros are alignment padding."
     },
-    "owner_payload_layout_verified": false,
+    "owner_payload_layout_verified": true,
     "code_reused": false
+  },
+  "owner_assembly": {
+    "source_offset": 868416,
+    "name": "Aki.Game",
+    "version": "1.0.0.0",
+    "mvid": "2ea7a717-61c0-4953-9f6c-13b1ec3564cd",
+    "bytes": 54166016,
+    "sha256": "b79969a511de727ae9444382387294e144522e28a433b2e7c1f4b3eceef2a74f",
+    "types": 48518,
+    "methods": 298313
+  },
+  "offline_prototypes": {
+    "no_cooldown": true,
+    "ignore_local_damage": true,
+    "runtime_loader_or_toggles": false,
+    "damage_multiplier": false
   }
 }
