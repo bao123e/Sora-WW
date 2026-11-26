@@ -23,7 +23,7 @@ jobs:
           from zipfile import ZipFile, ZIP_DEFLATED
           import hashlib, os
           root=Path('tools/runtime-profile')
-          out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Runtime-Inspector-v1.zip'
+          out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Runtime-Inspector-v2.zip'
           with ZipFile(out,'w',ZIP_DEFLATED) as z:
             for name in ['Collect-Runtime.ps1','Inspect-Runtime.cmd','README.vi.txt']:
               z.write(root/name,name)
@@ -34,4 +34,4 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload v0.2.0-ui-preview "$RUNNER_TEMP/Sora-WW-Runtime-Inspector-v1.zip" "$RUNNER_TEMP/Sora-WW-Runtime-Inspector-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
+        run: gh release upload v0.2.0-ui-preview "$RUNNER_TEMP/Sora-WW-Runtime-Inspector-v2.zip" "$RUNNER_TEMP/Sora-WW-Runtime-Inspector-v2.zip.sha256" --repo "$GITHUB_REPOSITORY"
