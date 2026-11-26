@@ -10,6 +10,8 @@
 #include <windows.h>
 #include <commctrl.h>
 #include <shellapi.h>
+#include <commdlg.h>
+#include <tlhelp32.h>
 #include <wchar.h>
 #include <stdlib.h>
 #include <string.h>
@@ -34,6 +36,9 @@ static BOOL key_registered,key_editing,tray_added,tracking=TRUE;
 static int matches,unverified;
 static DWORD game_pid;
 static wchar_t config_path[32768];
+static wchar_t game_path[32768],launch_notice[256];
+static BOOL launch_pending;
+static ULONGLONG launch_started;
 static NOTIFYICONDATAW tray;
 
 static WORD key_word(struct WKey key);
@@ -41,8 +46,11 @@ static struct WKey word_key(WORD word);
 static void key_name(struct WKey key,wchar_t *text,size_t cap);
 static void update_key_text(void);
 static void poll_game(void);
+static void choose_game(void);
+static void launch_game(void);
 static LRESULT CALLBACK key_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp);
 #include "ui.h"
+#include "launcher.h"
 
 static BOOL set_key_registration(struct WKey key){return RegisterHotKey(app,MENU_HOTKEY,key.mods|MOD_NOREPEAT,key.vk);}
 static void suspend_key(void){if(key_registered)UnregisterHotKey(app,MENU_HOTKEY);key_registered=FALSE;}
@@ -98,7 +106,7 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM unused){
  if(!ok){unverified++;return TRUE;}
  wchar_t *name=wcsrchr(path,L'\\');name=name?name+1:path;
  char narrow[128];int bytes=WideCharToMultiByte(CP_UTF8,0,name,-1,narrow,128,NULL,NULL);
- if(!bytes||!known_game_image(narrow)||(!contains_wuwa(title)&&!contains_wuwa(path))){unverified++;return TRUE;}
+ if(!bytes||!known_game_image(narrow)||(game_path[0]?_wcsicmp(game_path,path)!=0:(!contains_wuwa(title)&&!contains_wuwa(path)))){unverified++;return TRUE;}
  matches++;game=hwnd;game_pid=pid;return TRUE;
 }
 static void poll_game(void){
@@ -109,6 +117,8 @@ static void poll_game(void){
  else if(unverified)wcscpy(text,ui_text(L"Đã thấy cửa sổ Unreal; chưa xác minh được tiến trình.",L"Unreal window found; executable identity not verified."));
  else wcscpy(text,ui_text(L"Đang chờ cửa sổ Wuthering Waves…",L"Waiting for the Wuthering Waves game window..."));
  wchar_t previous[256];GetWindowTextW(status_label,previous,256);if(wcscmp(previous,text)){SetWindowTextW(status_label,text);if(ui_ready)InvalidateRect(ui_body,NULL,FALSE);}
+ if(launch_pending&&matches==1){launch_pending=FALSE;launch_notice[0]=0;ShowWindow(app,SW_HIDE);}
+ else if(launch_pending&&GetTickCount64()-launch_started>120000){launch_pending=FALSE;wcscpy(launch_notice,ui_text(L"Chưa thấy cửa sổ game. Kiểm tra launcher hoặc thông báo của game.",L"Game window not found yet. Check the launcher or game messages."));if(ui_ready)InvalidateRect(ui_body,NULL,FALSE);}
 }
 static void position_for(HWND hwnd,int width,int height,int *x,int *y){
  RECT area;HWND target=game;
@@ -144,6 +154,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
  case WM_HOTKEY:if(wp==MENU_HOTKEY&&!key_editing){if(IsWindowVisible(hwnd))ShowWindow(hwnd,SW_HIDE);else show_panel();}return 0;
  case WM_COMMAND:
   if(ui_command(LOWORD(wp)))return 0;
+  if(LOWORD(wp)==UI_BROWSE_GAME){choose_game();return 0;}
+  if(LOWORD(wp)==UI_LAUNCH_GAME){launch_game();return 0;}
   if(LOWORD(wp)==SAVE_KEY)save_key();
   else if(LOWORD(wp)==DEFAULT_KEY){SendMessageW(key_field,HKM_SETHOTKEY,key_word((struct WKey){VK_F1,0}),0);SetWindowTextW(note_label,ui_text(L"Đã chọn F1. Bấm Lưu để áp dụng.",L"Default selected. Click Save to apply it."));}
   else if(LOWORD(wp)==EXIT_APP)DestroyWindow(hwnd);
@@ -194,8 +206,9 @@ int WINAPI wWinMain(HINSTANCE module,HINSTANCE previous,PWSTR command,int show){
  WNDCLASSW klass={0};klass.hInstance=module;klass.lpfnWndProc=window_proc;klass.lpszClassName=APP_CLASS;klass.hCursor=LoadCursorW(NULL,IDC_ARROW);klass.hIcon=LoadIconW(NULL,IDI_APPLICATION);klass.hbrBackground=background;
  if(!RegisterClassW(&klass)){CloseHandle(instance_mutex);return 3;}
  RECT desktop={0};SystemParametersInfoW(SPI_GETWORKAREA,0,&desktop,0);int menu_height=758;if(desktop.bottom-desktop.top>400&&desktop.bottom-desktop.top<790)menu_height=desktop.bottom-desktop.top-32;
- app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Interface preview 0.2",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
+ app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Game launcher 0.3",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
  init_config();struct WKey saved;if(config_path[0]&&read_binding(config_path,&saved))menu_key=saved;
+ load_game_path();
  ui_create();
  tray.cbSize=sizeof(tray);tray.hWnd=app;tray.uID=1;tray.uFlags=NIF_MESSAGE|NIF_ICON|NIF_TIP;tray.uCallbackMessage=TRAY_MESSAGE;tray.hIcon=klass.hIcon;
  update_key_text();tray_added=Shell_NotifyIconW(NIM_ADD,&tray);key_registered=set_key_registration(menu_key);poll_game();center_panel();SetTimer(app,1,750,NULL);SetTimer(app,2,50,NULL);

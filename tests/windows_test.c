@@ -36,6 +36,20 @@ int main(void){
  SetWindowPos(simulated,NULL,420,240,1280,720,SWP_NOZORDER|SWP_NOACTIVATE);center_panel();assert(GetWindowRect(app,&r));assert(r.left==710&&r.top==380);
  LPARAM header=MAKELPARAM(r.left+200,r.top+10);assert(window_proc(app,WM_NCHITTEST,0,header)==HTCLIENT);
  ShowWindow(app,SW_SHOWNOACTIVATE);assert(IsWindowVisible(app));SendMessageW(app,WM_CLOSE,0,0);assert(IsWindow(app)&&!IsWindowVisible(app));
- game=NULL;DestroyWindow(simulated);UnregisterClassW(fake.lpszClassName,instance);suspend_key();DeleteFileW(config_path);DestroyWindow(app);UnregisterClassW(panel.lpszClassName,instance);DeleteObject(font);DeleteObject(background);
+ game=NULL;DestroyWindow(simulated);UnregisterClassW(fake.lpszClassName,instance);
+ wchar_t fixture[32768];assert(GetEnvironmentVariableW(L"WUWA_TEST_GAME",fixture,32768));assert(valid_game_path(fixture));assert(!valid_game_path(L"C:\\missing\\Client-Win64-Shipping.exe"));
+ assert(save_game_path(fixture));load_game_path();assert(!wcscmp(game_path,fixture));
+ assert(read_binding(config_path,&loaded)&&loaded.vk==VK_F24); /* path save preserves the custom shortcut */
+ wchar_t unicode_path[]=L"C:\\Thử nghiệm 游戏\\Client-Win64-Shipping.exe";assert(save_game_path(unicode_path));load_game_path();assert(!wcscmp(game_path,unicode_path));
+ assert(WritePrivateProfileStringW(L"Game",L"ExecutableUtf16Hex",L"00zz",config_path));load_game_path();assert(!game_path[0]);
+ assert(save_game_path(fixture));load_game_path();ShowWindow(app,SW_SHOWNOACTIVATE);launch_game();assert(launch_pending);
+ ULONGLONG started=launch_started;launch_game();assert(launch_pending&&launch_started==started); /* repeated launch waits */
+ assert(game_process_state()==1);launch_pending=FALSE;launch_game();assert(launch_pending); /* existing process before its window loads */
+ ULONGLONG deadline=GetTickCount64()+10000;do{Sleep(50);poll_game();}while(matches!=1&&GetTickCount64()<deadline);
+ assert(matches==1&&game&&!launch_pending&&!IsWindowVisible(app));
+ assert(game_process_state()==1);HWND launched=game;launch_game();assert(game==launched&&!IsWindowVisible(app));
+ DWORD fixture_pid;GetWindowThreadProcessId(launched,&fixture_pid);HANDLE fixture_process=OpenProcess(SYNCHRONIZE,FALSE,fixture_pid);assert(fixture_process);assert(PostMessageW(launched,WM_CLOSE,0,0));assert(WaitForSingleObject(fixture_process,5000)==WAIT_OBJECT_0);CloseHandle(fixture_process);
+ poll_game();assert(matches==0);launch_pending=TRUE;launch_started=GetTickCount64()-120001;poll_game();assert(!launch_pending&&launch_notice[0]);
+ suspend_key();DeleteFileW(config_path);DestroyWindow(app);UnregisterClassW(panel.lpszClassName,instance);DeleteObject(font);DeleteObject(background);
  puts("PASS actual Windows controls, conflict/save rollback, persistence, centering, executable identity rejection and hide-on-close; no game/input execution");return 0;
 }

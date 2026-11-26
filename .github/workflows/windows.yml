@@ -45,7 +45,7 @@ jobs:
             dist/windows-verification.json
             dist/ui-preview-*.png
       - name: Publish foundation preview
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/game-launcher'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,10 +59,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Giao diện theo ảnh tham khảo của chủ tool: nền tối trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Phím tắt, nhóm có đường phân cách, cuộn nội dung và thanh cuối cố định. Nút Ghim, độ đậm menu, tiếng Việt/English và phím tùy chỉnh đều hoạt động và được lưu lại. Đây là thay đổi UI/UX; chưa có chức năng gameplay.
+          Sửa lệnh Mở game để truyền tham số -krqlv=sd do chủ tool cung cấp cho bản SD. EXE và tham số được truyền riêng qua Windows ShellExecuteEx; không cần sửa tên file hay tạo shortcut. Giữ đường dẫn, phím menu và thiết lập đã lưu.
 
-          Thoát hẳn bản cũ bằng Exit, tải ZIP win64 rồi giải nén TOÀN BỘ. Chạy Start-WuWa-PC.cmd, nhấn phím menu đã lưu (mặc định F1). Mục Đổi phím / Phím tắt -> nhập tổ hợp -> Lưu. Cấu hình cũ được giữ tại LocalAppData/WuWaPC.
+          Thoát bản cũ bằng Thoát, giải nén toàn bộ ZIP win64, chạy Start-WuWa-PC.cmd và mở menu bằng phím đã lưu. Bấm Mở game trong Tổng quan. Nếu chưa chọn đường dẫn, chọn Client/Binaries/Win64/Client-Win64-Shipping.exe.
 
-          Windows CI đã kiểm tra EXE thật, tabs, lưu phím, khôi phục khi trùng/lưu lỗi, ngôn ngữ, ghim và độ trong suốt qua lần khởi động tiếp theo. Ảnh xem trước chỉ chụp chính ứng dụng thử nghiệm trên CI, không có game/tài khoản. Chủ tool đã xác nhận bản nền nhận diện được cửa sổ WuWa; giao diện mới cần xác nhận hiển thị trong game thực tế.
+          Windows CI khởi chạy EXE mô phỏng chỉ tạo cửa sổ khi nhận đúng -krqlv=sd và đúng thư mục làm việc; đồng thời kiểm tra đường dẫn Unicode, chống mở trùng, chờ cửa sổ và tự ẩn menu. Chưa xác nhận việc vào WuWa thật; ba chức năng gameplay vẫn chưa triển khai.
           NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Dark UI preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Game launcher preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
