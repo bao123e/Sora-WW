@@ -23,13 +23,13 @@ function Read-PakFooter([IO.FileInfo]$File){
 }
 function Get-PakReport([string]$Directory){
  $folder=Get-Item -LiteralPath $Directory
- if(!$folder.PSIsContainer -or $folder.Name -ine 'Paks'){throw 'Select a .pak file inside the Client\Content\Paks folder.'}
+ if(!$folder.PSIsContainer -or $folder.Name -notmatch '^(Paks|SD)$'){throw 'Select a .pak file inside Client\Content\Paks or Client\Content\SD.'}
  $files=@(Get-ChildItem -LiteralPath $folder.FullName -Filter '*.pak' -File | Sort-Object Name)
  if($files.Count -eq 0){throw 'No .pak files found.'}
- if($files.Count -gt 2048){throw 'Too many .pak files. Select only the game Paks folder.'}
+ if($files.Count -gt 2048){throw 'Too many .pak files. Select only the game Paks or SD folder.'}
  $samples=@(foreach($file in $files){Read-PakFooter $file})
  if(@($samples | Where-Object {$_.status -eq 'OK'}).Count -eq 0){throw 'Could not read any PAK footer. No report was written.'}
- return [ordered]@{schema='SORA-WW-PAK-FOOTERS-1';sample_limit_bytes=4096;file_count=$files.Count;source_files_modified=$false;contains_full_paks=$false;files=$samples}
+ return [ordered]@{schema='SORA-WW-PAK-FOOTERS-1';sample_limit_bytes=4096;source_folder=$folder.Name;file_count=$files.Count;source_files_modified=$false;contains_full_paks=$false;files=$samples}
 }
 function Test-Collector {
  $root=Join-Path ([IO.Path]::GetTempPath()) ('wuwa-pak-test-'+[Guid]::NewGuid().ToString('N'));$paks=Join-Path $root 'Paks';[void][IO.Directory]::CreateDirectory($paks)
@@ -50,14 +50,24 @@ function Test-Collector {
   $roundTrip=($report | ConvertTo-Json -Depth 6) | ConvertFrom-Json
   if($roundTrip.files.Count -ne 2 -or $roundTrip.contains_full_paks -or $roundTrip.source_files_modified){throw 'TEST_REPORT_ROUNDTRIP'}
   if(($report | ConvertTo-Json -Depth 6).Contains($root)){throw 'TEST_PRIVATE_PATH_LEAK'}
-  Write-Output 'PASS footer bytes/hash, 64-bit offsets, small files, .sig/subfolder exclusion, source unchanged and path-free JSON.'
+  $sd=Join-Path $root 'SD';[void][IO.Directory]::CreateDirectory($sd)
+  $sdFile=Join-Path $sd 'pakchunk4-SD-WindowsNoEditor.pak';[IO.File]::WriteAllBytes($sdFile,$bytes)
+  $sdBefore=(Get-FileHash -LiteralPath $sdFile -Algorithm SHA256).Hash
+  [IO.File]::WriteAllBytes((Join-Path $sd 'pakchunk4-SD-WindowsNoEditor.sig'),[byte[]](9))
+  $sdReport=Get-PakReport $sd
+  if($sdReport.source_folder -ne 'SD' -or $sdReport.file_count -ne 1 -or $sdReport.files[0].tail_bytes -ne 4096 -or $sdReport.files[0].tail_offset -ne 6027){throw 'TEST_SD_SELECTION'}
+  if($sdReport.files[0].tail_sha256 -ne $report.files[0].tail_sha256){throw 'TEST_SD_HASH'}
+  if((Get-FileHash -LiteralPath $sdFile -Algorithm SHA256).Hash -ne $sdBefore){throw 'TEST_SD_SOURCE_CHANGED'}
+  $rejected=$false;try{Get-PakReport $root | Out-Null}catch{$rejected=$true}
+  if(!$rejected){throw 'TEST_UNSUPPORTED_FOLDER_ACCEPTED'}
+  Write-Output 'PASS Paks and SD collection, footer bytes/hash, 64-bit offsets, small files, .sig/subfolder exclusion, source unchanged, unsupported folder rejection and path-free JSON.'
  }finally{if(Test-Path -LiteralPath $root){Remove-Item -LiteralPath $root -Recurse -Force}}
 }
 if($SelfTest){Test-Collector;exit 0}
 Add-Type -AssemblyName System.Windows.Forms
-$dialog=[Windows.Forms.OpenFileDialog]::new();$dialog.Title='Select ANY .pak file inside Client\Content\Paks';$dialog.Filter='Unreal PAK files (*.pak)|*.pak';$dialog.Multiselect=$false;$dialog.CheckFileExists=$true
+$dialog=[Windows.Forms.OpenFileDialog]::new();$dialog.Title='Select ANY .pak file inside Client\Content\Paks or Client\Content\SD';$dialog.Filter='Unreal PAK files (*.pak)|*.pak';$dialog.Multiselect=$false;$dialog.CheckFileExists=$true
 try{
- Write-Output 'READ ONLY: select any .pak in the game Paks folder. Only the final 4 KB of each .pak will be read.'
+ Write-Output 'READ ONLY: select any .pak in the game Paks or SD folder. Only the final 4 KB of each .pak will be read.'
  if($dialog.ShowDialog() -ne [Windows.Forms.DialogResult]::OK){Write-Output 'Cancelled. No files were changed.';exit 0}
  $report=Get-PakReport ([IO.Path]::GetDirectoryName($dialog.FileName))
  $desktop=[Environment]::GetFolderPath('Desktop');if(!$desktop){throw 'Desktop folder unavailable.'}
