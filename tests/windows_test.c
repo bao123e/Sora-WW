@@ -44,6 +44,7 @@ int main(void){
  assert(WritePrivateProfileStringW(L"Game",L"ExecutableUtf16Hex",L"00zz",config_path));load_game_path();assert(!game_path[0]);
  assert(save_game_path(fixture));load_game_path();ShowWindow(app,SW_SHOWNOACTIVATE);launch_game();assert(launch_pending);
  ULONGLONG started=launch_started;launch_game();assert(launch_pending&&launch_started==started); /* repeated launch waits */
+ assert(game_process_state()==1);launch_pending=FALSE;launch_game();assert(launch_pending); /* existing process before its window loads */
  ULONGLONG deadline=GetTickCount64()+10000;do{Sleep(50);poll_game();}while(matches!=1&&GetTickCount64()<deadline);
  assert(matches==1&&game&&!launch_pending&&!IsWindowVisible(app));
  assert(game_process_state()==1);HWND launched=game;launch_game();assert(game==launched&&!IsWindowVisible(app));
