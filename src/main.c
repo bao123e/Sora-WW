@@ -156,7 +156,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
  case WM_SIZE:if(ui_ready)ui_layout();return 0;
  case WM_MOUSEWHEEL:if(ui_ready)return SendMessageW(ui_body,msg,wp,lp);break;
  case WM_CTLCOLORSTATIC:
- case WM_CTLCOLOREDIT:{BOOL edit=(HWND)lp==key_field;SetTextColor((HDC)wp,RGB(222,232,242));SetBkColor((HDC)wp,edit?RGB(29,47,69):ui_bg());return (LRESULT)(edit&&ui_field_brush?ui_field_brush:background);}
+ case WM_CTLCOLOREDIT:{BOOL edit=(HWND)lp==key_field;SetTextColor((HDC)wp,RGB(222,232,242));SetBkColor((HDC)wp,edit?RGB(29,47,69):(HWND)lp==status_label?RGB(22,26,32):ui_bg());return (LRESULT)(edit&&ui_field_brush?ui_field_brush:(HWND)lp==status_label&&ui_status_brush?ui_status_brush:background);}
 
  case WM_CLOSE:ShowWindow(hwnd,SW_HIDE);return 0;
  case WM_DESTROY:
@@ -194,5 +194,5 @@ int WINAPI wWinMain(HINSTANCE module,HINSTANCE previous,PWSTR command,int show){
  if(!key_registered){show_panel();SetWindowTextW(note_label,ui_text(L"Phím menu đang được dùng. Chọn phím khác rồi bấm Lưu.",L"Menu shortcut is in use. Choose a different shortcut and Save."));}
  else if(!tray_added)SetWindowTextW(note_label,ui_text(L"Không hiện được biểu tượng khay. Phím menu vẫn dùng được.",L"Tray icon unavailable. Your menu shortcut still works."));
  MSG msg;while(GetMessageW(&msg,NULL,0,0)>0){if(!IsDialogMessageW(app,&msg)){TranslateMessage(&msg);DispatchMessageW(&msg);}}
- DeleteObject(font);DeleteObject(title_font);if(ui_small_font)DeleteObject(ui_small_font);if(ui_field_brush)DeleteObject(ui_field_brush);DeleteObject(background);CloseHandle(instance_mutex);return 0;
+ DeleteObject(font);DeleteObject(title_font);if(ui_small_font)DeleteObject(ui_small_font);if(ui_field_brush)DeleteObject(ui_field_brush);if(ui_status_brush)DeleteObject(ui_status_brush);DeleteObject(background);CloseHandle(instance_mutex);return 0;
 }

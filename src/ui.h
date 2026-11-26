@@ -19,7 +19,7 @@ static BOOL ui_pinned=TRUE,ui_ready,ui_dragging;
 static int ui_drag_start,ui_drag_offset;
 static HWND ui_body,ui_hover,ui_buttons[10];
 static HWND ui_general_controls[2],ui_key_controls[4];
-static HBRUSH ui_field_brush;
+static HBRUSH ui_field_brush,ui_status_brush;
 static HFONT ui_small_font;
 static WNDPROC ui_original_button;
 static const wchar_t *ui_text(const wchar_t *vi,const wchar_t *en){return ui_language?en:vi;}
@@ -156,7 +156,7 @@ static LRESULT CALLBACK ui_body_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
 }
 static void ui_create(void){
  WNDCLASSW klass={0};klass.hInstance=instance;klass.lpfnWndProc=ui_body_proc;klass.lpszClassName=L"WuWaPCContent";klass.hCursor=LoadCursorW(NULL,IDC_ARROW);RegisterClassW(&klass);
- ui_field_brush=CreateSolidBrush(RGB(29,47,69));ui_small_font=CreateFontW(-13,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
+ ui_status_brush=CreateSolidBrush(RGB(22,26,32));ui_field_brush=CreateSolidBrush(RGB(29,47,69));ui_small_font=CreateFontW(-13,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,0,0,CLEARTYPE_QUALITY,0,L"Segoe UI");
  ui_body=CreateWindowExW(WS_EX_CONTROLPARENT,klass.lpszClassName,L"",WS_CHILD|WS_VISIBLE|WS_CLIPCHILDREN,14,88,682,616,app,NULL,instance,NULL);
  const int ids[]={UI_GENERAL,UI_KEYS,UI_PIN,UI_HIDE,UI_CHANGE_KEY,UI_LANGUAGE,EXIT_APP};for(int i=0;i<7;i++)ui_buttons[i]=ui_child(app,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,ids[i]);
  status_label=ui_child(ui_body,L"STATIC",L"",0,0);ui_general_controls[0]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_OPACITY);ui_general_controls[1]=ui_child(ui_body,L"BUTTON",L"",BS_OWNERDRAW|WS_TABSTOP,UI_CHANGE_KEY);

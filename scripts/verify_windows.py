@@ -17,6 +17,8 @@ def lifecycle(exe):
     user.IsWindowVisible.argtypes=[wt.HWND];user.IsWindowVisible.restype=wt.BOOL
     user.PostMessageW.argtypes=[wt.HWND,wt.UINT,wt.WPARAM,wt.LPARAM];user.PostMessageW.restype=wt.BOOL
     user.GetClassNameW.argtypes=[wt.HWND,wt.LPWSTR,ctypes.c_int]
+    user.GetDlgItem.argtypes=[wt.HWND,ctypes.c_int];user.GetDlgItem.restype=wt.HWND
+    user.GetWindowRect.argtypes=[wt.HWND,ctypes.POINTER(wt.RECT)];user.GetWindowRect.restype=wt.BOOL
     user.GetWindowLongPtrW.argtypes=[wt.HWND,ctypes.c_int];user.GetWindowLongPtrW.restype=ctypes.c_ssize_t
     user.GetLayeredWindowAttributes.argtypes=[wt.HWND,ctypes.POINTER(wt.DWORD),ctypes.POINTER(wt.BYTE),ctypes.POINTER(wt.DWORD)];user.GetLayeredWindowAttributes.restype=wt.BOOL
     user.SendMessageW.argtypes=[wt.HWND,wt.UINT,wt.WPARAM,wt.LPARAM];user.SendMessageW.restype=ctypes.c_ssize_t
@@ -26,12 +28,12 @@ def lifecycle(exe):
         hwnd=user.FindWindowW('WuWaPCControlPanel',None)
         actual=wt.DWORD();user.GetWindowThreadProcessId(hwnd,ctypes.byref(actual))
         return hwnd if hwnd and actual.value==pid else None
-    def hotkey_field(hwnd):
+    def hotkey_field(hwnd,class_name='msctls_hotkey32'):
         fields=[]
         @callback_type
         def collect(child,_):
             name=ctypes.create_unicode_buffer(128);user.GetClassNameW(child,name,128)
-            if name.value.lower()=='msctls_hotkey32':fields.append(child)
+            if name.value.lower()==class_name.lower():fields.append(child)
             return True
         user.EnumChildWindows(hwnd,collect,0)
         return fields[0] if fields else None
@@ -50,7 +52,18 @@ def lifecycle(exe):
                 wait_until(lambda:user.IsWindowVisible(hwnd),'Show command did not open menu')
                 field=wait_until(lambda:hotkey_field(hwnd),'Hotkey field missing')
                 assert not user.IsWindowVisible(field),'Hidden key tab leaked a control'
-                if run==0:capture(hwnd,ROOT/'dist/ui-preview-overview.png')
+                if run==0:
+                    body=hotkey_field(hwnd,'WuWaPCContent');assert body
+                    opacity=user.GetDlgItem(body,206);footer=user.GetDlgItem(hwnd,205);assert opacity and footer
+                    def rect(control):
+                        value=wt.RECT();assert user.GetWindowRect(control,ctypes.byref(value));return value.left,value.top,value.right,value.bottom
+                    before=rect(opacity);footer_before=rect(footer)
+                    user.SendMessageW(body,0x020a,((-120)&0xffff)<<16,0)
+                    assert rect(opacity)[1]<before[1],'Content did not scroll'
+                    assert rect(footer)==footer_before,'Footer moved with scrolling content'
+                    user.SendMessageW(body,0x020a,1440<<16,0)
+                    assert rect(opacity)==before,'Scroll did not return to the top'
+                    capture(hwnd,ROOT/'dist/ui-preview-overview.png')
                 user.SendMessageW(hwnd,0x0111,201,0) # Keybind tab
                 wait_until(lambda:user.IsWindowVisible(field),'Keybind tab did not show field')
                 actual=user.SendMessageW(field,0x0402,0,0) # HKM_GETHOTKEY

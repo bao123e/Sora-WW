@@ -24,6 +24,17 @@ jobs:
         run: python scripts/verify_windows.py --zig zig
       - name: Package verified binary and source
         run: python scripts/package.py
+      - name: Export test-app UI previews for review
+        if: github.ref == 'refs/heads/feature/reference-ui'
+        shell: python
+        run: |
+          from pathlib import Path
+          import base64
+          for path in sorted(Path('dist').glob('ui-preview-*.png')):
+            encoded=base64.b64encode(path.read_bytes()).decode('ascii')
+            parts=[encoded[i:i+3000] for i in range(0,len(encoded),3000)]
+            for index,part in enumerate(parts):
+              print(f'SORA_UI_PREVIEW|{path.name}|{index}|{len(parts)}|{part}',flush=True)
       - name: Upload tested packages
         uses: actions/upload-artifact@v4
         with:
