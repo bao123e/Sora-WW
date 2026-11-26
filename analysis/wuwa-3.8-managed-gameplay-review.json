@@ -100,8 +100,25 @@
       "owner_build_verified": false
     }
   },
-  "next_needed_evidence": "Locate Aki.Game.dll in the owner installation and inspect its managed identity and relevant CIL if a loose file is available. The literal filename is present in the supplied EXE. No request for an arbitrary additional PAK is justified.",
+  "next_needed_evidence": "The loose file was not located. A read-only scanner is prepared for the already-inspected pakchunk18 (105427118 bytes, known footer SHA256). It accepts only unencrypted/uncompressed entries with matching entry SHA1, managed PE and assembly identity Aki.Game. Real source payload is not available in the cloud; no gameplay patch can be validated until this exact input is read.",
   "gameplay_implemented": false,
   "game_runtime_tested": false,
-  "third_party_source_code_copied_into_repository": false
+  "third_party_source_code_copied_into_repository": false,
+  "loose_assembly_search": {
+    "owner_result": "Windows Explorer search did not locate a loose Aki.Game.dll; only a different AkImpacter.dll appeared.",
+    "interpretation": "Does not prove absence of an assembly stored inside a PAK."
+  },
+  "package_layout_reference": {
+    "url": "https://github.com/RBsGameLab/tidelab-oss/blob/85c4c8b6aa4f7f79811ef57978d20e2718eaa080/tools/build_cspak.py",
+    "companion_format_url": "https://github.com/RBsGameLab/tidelab-oss/blob/85c4c8b6aa4f7f79811ef57978d20e2718eaa080/tools/pak_build.py",
+    "declared_client_build": "3.8.0 9244589",
+    "virtual_path": "Client/Content/Aki/ScriptAssemblies/Aki.Game.dll",
+    "reported_plain_entry_layout": {
+      "header_bytes": 53,
+      "zero_prefix_bytes": 11,
+      "mapped_assemblies_may_have_unencrypted_uncompressed_payload": true
+    },
+    "owner_payload_layout_verified": false,
+    "code_reused": false
+  }
 }
