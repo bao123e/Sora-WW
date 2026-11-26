@@ -59,12 +59,12 @@ static void ui_draw_body(HDC dc){
   ui_label(dc,ui_text(L"Mở game và nhận diện cửa sổ",L"Launch and window detection"),(RECT){178,150,width,176},RGB(223,226,232),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,game_path[0]?game_path:ui_text(L"Chưa chọn EXE",L"No EXE selected"),(RECT){0,236,width,264},RGB(165,174,188),DT_SINGLELINE|DT_VCENTER|DT_PATH_ELLIPSIS);
   ui_label(dc,launch_notice,(RECT){0,274,width,328},RGB(185,204,225),DT_WORDBREAK);
-  ui_section(dc,ui_text(L"Gameplay — thử nghiệm",L"Gameplay — experimental"),348,width);
+  ui_section(dc,ui_text(L"Khôi phục bản thử 0.4",L"Recover from the 0.4 trial"),348,width);
   ui_label(dc,L"No Cooldown",(RECT){0,388,178,418},RGB(206,216,232),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,ui_text(L"Chặn sát thương",L"Local damage guard"),(RECT){0,436,178,466},RGB(206,216,232),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,L"Damage Multiplier",(RECT){0,484,178,514},RGB(128,134,145),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,ui_text(L"Chưa hỗ trợ",L"Unavailable"),(RECT){178,484,width,514},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
-  ui_label(dc,ui_text(L"Áp dụng khi đóng và mở lại game từ tool.\nChưa xác nhận hiệu lực trong game hoặc bảo vệ HP từ server.",L"Applies after closing and reopening the game through this tool.\nIn-game effects and server-side HP protection are unverified."),(RECT){0,568,width,632},RGB(233,179,60),DT_WORDBREAK);
+  ui_label(dc,ui_text(L"Bản vá 0.4 đã tạm dừng sau báo cáo văng game.\nĐóng game, bấm Khôi phục / Mở game để gỡ gói cũ trước khi mở.",L"The 0.4 patch is suspended after a reported crash.\nClose the game, then Recover / Open game removes the old package first."),(RECT){0,568,width,632},RGB(233,179,60),DT_WORDBREAK);
   ui_section(dc,ui_text(L"Giao diện",L"Appearance"),666,width);
   ui_label(dc,ui_text(L"Độ đậm menu",L"Menu opacity"),(RECT){0,706,170,736},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
   ui_label(dc,ui_text(L"Luôn ở trên cùng",L"Always on top"),(RECT){0,754,170,782},RGB(145,150,159),DT_SINGLELINE|DT_VCENTER);
@@ -90,7 +90,7 @@ static void ui_paint_body(HWND hwnd,HDC supplied){
 static void ui_main_paint(HWND hwnd,HDC supplied){
  PAINTSTRUCT paint;HDC target=supplied?supplied:BeginPaint(hwnd,&paint);RECT r;GetClientRect(hwnd,&r);HDC dc=CreateCompatibleDC(target);HBITMAP bitmap=CreateCompatibleBitmap(target,r.right>0?r.right:1,r.bottom>0?r.bottom:1);HGDIOBJ old=SelectObject(dc,bitmap);
  ui_fill(dc,r,ui_bg());ui_fill(dc,(RECT){0,0,r.right,30},RGB(42,72,111));SelectObject(dc,font);
- ui_label(dc,L"Sora WW  0.4",(RECT){32,0,r.right-125,30},RGB(242,246,251),DT_SINGLELINE|DT_VCENTER);
+ ui_label(dc,L"Sora WW  0.4.1",(RECT){32,0,r.right-125,30},RGB(242,246,251),DT_SINGLELINE|DT_VCENTER);
  HPEN logo=CreatePen(PS_SOLID,2,RGB(220,236,255));HGDIOBJ previous=SelectObject(dc,logo);MoveToEx(dc,9,10,NULL);LineTo(dc,13,21);LineTo(dc,17,12);LineTo(dc,21,21);LineTo(dc,25,10);SelectObject(dc,previous);DeleteObject(logo);
  HPEN separator=CreatePen(PS_SOLID,1,RGB(59,62,69));previous=SelectObject(dc,separator);MoveToEx(dc,14,80,NULL);LineTo(dc,r.right-14,80);MoveToEx(dc,14,r.bottom-50,NULL);LineTo(dc,r.right-14,r.bottom-50);SelectObject(dc,previous);DeleteObject(separator);
  BitBlt(target,0,0,r.right,r.bottom,dc,0,0,SRCCOPY);SelectObject(dc,old);DeleteObject(bitmap);DeleteDC(dc);if(!supplied)EndPaint(hwnd,&paint);
@@ -145,8 +145,8 @@ static void ui_set_alpha(void){SetLayeredWindowAttributes(app,0,(BYTE)(255*ui_op
 static void ui_save_appearance(void){if(config_path[0]){wchar_t opacity[8];swprintf(opacity,8,L"%d",ui_opacity);WritePrivateProfileStringW(L"Appearance",L"Opacity",opacity,config_path);WritePrivateProfileStringW(L"Appearance",L"Language",ui_language?L"en":L"vi",config_path);WritePrivateProfileStringW(L"Appearance",L"Pinned",ui_pinned?L"1":L"0",config_path);}}
 static void ui_apply_language(void){
  if(!ui_ready)return;SetWindowTextW(ui_buttons[0],ui_text(L"Tổng quan",L"Overview"));SetWindowTextW(ui_buttons[1],ui_text(L"Phím tắt",L"Keybinds"));SetWindowTextW(ui_buttons[2],ui_text(L"Ghim",L"Pin"));SetWindowTextW(ui_buttons[3],L"×");SetWindowTextW(ui_buttons[4],ui_text(L"Đổi phím",L"Change"));SetWindowTextW(ui_buttons[5],ui_language?L"English":L"Tiếng Việt");SetWindowTextW(ui_buttons[6],ui_text(L"Thoát",L"Exit"));SetWindowTextW(ui_general_controls[1],ui_text(L"Đổi phím",L"Change shortcut"));SetWindowTextW(ui_key_controls[0],ui_text(L"Lưu",L"Save"));SetWindowTextW(ui_key_controls[1],ui_text(L"Mặc định",L"Default"));
- SetWindowTextW(ui_general_controls[2],ui_text(L"Chọn EXE…",L"Choose EXE…"));SetWindowTextW(ui_general_controls[3],ui_text(L"Mở game",L"Open game"));
- SetWindowTextW(ui_general_controls[4],trial_cd?ui_text(L"Bật lần mở sau",L"On next launch"):ui_text(L"Tắt",L"Off"));SetWindowTextW(ui_general_controls[5],trial_damage?ui_text(L"Bật lần mở sau",L"On next launch"):ui_text(L"Tắt",L"Off"));SetWindowTextW(ui_general_controls[6],ui_text(L"Hoàn tác gói thử",L"Remove trial package"));
+ SetWindowTextW(ui_general_controls[2],ui_text(L"Chọn EXE…",L"Choose EXE…"));SetWindowTextW(ui_general_controls[3],ui_text(L"Khôi phục / Mở game",L"Recover / Open game"));
+ SetWindowTextW(ui_general_controls[4],ui_text(L"Tạm dừng",L"Suspended"));SetWindowTextW(ui_general_controls[5],ui_text(L"Tạm dừng",L"Suspended"));EnableWindow(ui_general_controls[4],FALSE);EnableWindow(ui_general_controls[5],FALSE);SetWindowTextW(ui_general_controls[6],ui_text(L"Hoàn tác gói thử",L"Remove trial package"));
  wchar_t opacity[12];swprintf(opacity,12,L"%d%%",ui_opacity);SetWindowTextW(ui_general_controls[0],opacity);SetWindowTextW(note_label,ui_text(L"Bấm ô phím và nhấn tổ hợp muốn dùng, sau đó bấm Lưu.",L"Click the shortcut field, press your key combination, then Save."));update_key_text();poll_game();ui_layout();
 }
 static void ui_popup(HWND button,BOOL language){

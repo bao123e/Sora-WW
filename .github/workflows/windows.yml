@@ -66,10 +66,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Bản thử 0.4 tích hợp chuẩn bị gói C# ngoại tuyến cho No Cooldown và chặn hai luồng sát thương cục bộ, chỉ cho role thuộc người chơi. Các lựa chọn được lưu và áp dụng ở lần mở game sau. Damage Multiplier chưa hỗ trợ. Hiệu lực gameplay trong WuWa thật chưa được xác nhận.
+          Bản khôi phục sau báo cáo game đóng khi dùng gói thử 0.4. Hai lựa chọn cũ bị tạm dừng và không được bật lại từ cấu hình đã lưu. Nút Khôi phục / Mở game gỡ gói thử có hash khớp hồ sơ tool rồi mới mở EXE gốc với -krqlv=sd. Không tạo gói mới, không sửa PAK/SIG/EXE gốc.
 
-          Giải nén TOÀN BỘ ZIP, gồm WuWa-PC.exe và Sora-Gameplay.exe. Đóng game trước khi thay gói. Trong Tổng quan, bật lựa chọn thử rồi bấm Mở game. Backend đối chiếu đúng pakchunk18 đã phân tích và tạo riêng zz_SoraWW_Experimental_P.pak. Không thay PAK/SIG/EXE gốc, không sửa kiểm tra chữ ký hoặc tiêm tiến trình. Hoàn tác gói thử chỉ xóa gói do tool tạo có hash còn khớp. Tool dừng nếu game đang chạy, bản game khác hoặc gói thử đã bị thay đổi.
+          Đóng game, Thoát hẳn bản tool 0.4, giải nén toàn bộ ZIP mới (giữ cả hai EXE), mở menu và bấm Khôi phục / Mở game. Nếu không chứng minh được gói là của tool hoặc file đã thay đổi, tool giữ nguyên và báo lỗi thay vì tự xóa.
 
-          CI kiểm tra control/phím, chọn đường dẫn, backend Windows đóng gói độc lập, gói PAK đọc lại, hash, hoàn tác và từ chối đầu vào sai. Kiểm tra với đầu vào thật đã chạy ngoại tuyến riêng; chưa chạy game thật. Đây là bản thử có thể không được client nạp; không suy ra hiệu lực từ trạng thái tìm thấy cửa sổ hoặc chuẩn bị gói thành công.
+          Windows CI kiểm tra đặt lại cấu hình cũ, nút tạm dừng, chặn chuẩn bị gói mới, luồng menu → backend gỡ gói → mở EXE mô phỏng, cùng các kiểm tra phím/đường dẫn/giao diện. Chưa có xác nhận khôi phục trên máy người dùng; nguyên nhân cụ thể của lần văng và backend gameplay thời gian thực vẫn chưa xác minh.
           NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Experimental gameplay trial" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Recovery from 0.4 trial" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false

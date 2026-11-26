@@ -87,6 +87,9 @@ def checked_owned_file(path, manifest):
 def apply_trial(exe, state, features, running=game_running):
     if running():
         raise ValueError('CLOSE_GAME_FIRST')
+    # Owner reported a real game crash with the 0.4 overlay. Never reinstall it.
+    if features:
+        raise ValueError('TRIAL_SUSPENDED')
     manifest_path = state / 'gameplay-trial.json'
     manifest = read_manifest(manifest_path)
     target = destination(exe)
@@ -171,7 +174,7 @@ def main():
         write_result(state, code)
     except Exception as error:
         # Report fixed error identifiers only; never write raw game/account paths.
-        known = {'CLOSE_GAME_FIRST', 'INVALID_GAME_PATH', 'UNSUPPORTED_BUILD', 'UNSUPPORTED_ASSEMBLY', 'INVALID_TRIAL_STATE', 'UNOWNED_OR_CHANGED_PACKAGE', 'OTHER_INSTALL_ACTIVE', 'PROCESS_CHECK_FAILED'}
+        known = {'CLOSE_GAME_FIRST', 'TRIAL_SUSPENDED', 'INVALID_GAME_PATH', 'UNSUPPORTED_BUILD', 'UNSUPPORTED_ASSEMBLY', 'INVALID_TRIAL_STATE', 'UNOWNED_OR_CHANGED_PACKAGE', 'OTHER_INSTALL_ACTIVE', 'PROCESS_CHECK_FAILED'}
         code = str(error) if str(error) in known else 'FILE_OR_PREPARATION_ERROR'
         write_result(state, code)
         raise SystemExit(1)

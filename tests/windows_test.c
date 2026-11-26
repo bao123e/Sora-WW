@@ -50,9 +50,10 @@ int main(void){
  assert(game_process_state()==1);HWND launched=game;launch_game();assert(game==launched&&!IsWindowVisible(app));
  DWORD fixture_pid;GetWindowThreadProcessId(launched,&fixture_pid);HANDLE fixture_process=OpenProcess(SYNCHRONIZE,FALSE,fixture_pid);assert(fixture_process);assert(PostMessageW(launched,WM_CLOSE,0,0));assert(WaitForSingleObject(fixture_process,5000)==WAIT_OBJECT_0);CloseHandle(fixture_process);
  poll_game();assert(matches==0);launch_pending=TRUE;launch_started=GetTickCount64()-120001;poll_game();assert(!launch_pending&&launch_notice[0]);
- trial_toggle(UI_TRIAL_CD);assert(trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",0,config_path)==1);
+ trial_cd=trial_damage=TRUE;trial_toggle(UI_TRIAL_CD);assert(!trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",99,config_path)==0);
+ wchar_t manifest[32768];swprintf(manifest,32768,L"%ls\\gameplay-trial.json",private_state);FILE *marker=_wfopen(manifest,L"wb");assert(marker);fputs("{}",marker);fclose(marker);
  launch_game();assert(!launch_pending&&!trial_process&&wcsstr(launch_notice,L"missing")); /* test executable has no adjacent helper; must not launch silently */
- trial_toggle(UI_TRIAL_CD);assert(!trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",99,config_path)==0);
+ assert(DeleteFileW(manifest));trial_toggle(UI_TRIAL_CD);assert(!trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",99,config_path)==0);
  suspend_key();DeleteFileW(config_path);assert(RemoveDirectoryW(private_state));DestroyWindow(app);UnregisterClassW(panel.lpszClassName,instance);DeleteObject(font);DeleteObject(background);
  puts("PASS actual Windows controls, conflict/save rollback, persistence, centering, executable identity rejection and hide-on-close; no game/input execution");return 0;
 }

@@ -66,9 +66,10 @@ class OwnershipTests(unittest.TestCase):
             apply_trial(self.exe, self.state, [], running=lambda: True)
         self.assertEqual(self.target.read_bytes(), b'owned')
 
-    def test_unsupported_build_never_writes_package(self):
-        with self.assertRaisesRegex(ValueError, 'UNSUPPORTED_BUILD'):
-            apply_trial(self.exe, self.state, ['no-cooldown'], running=lambda: False)
+    def test_suspended_preparation_never_writes_package(self):
+        for features in (['no-cooldown'], ['ignore-local-damage'], ['no-cooldown', 'ignore-local-damage']):
+            with self.assertRaisesRegex(ValueError, 'TRIAL_SUSPENDED'):
+                apply_trial(self.exe, self.state, features, running=lambda: False)
         self.assertFalse(self.target.exists()); self.assertFalse(self.manifest.exists())
 
     def test_interrupted_install_is_removable(self):

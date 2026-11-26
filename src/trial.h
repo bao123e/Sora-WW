@@ -10,11 +10,12 @@ static BOOL trial_state_dir(wchar_t *out){
  if(!config_path[0])return FALSE;wcscpy(out,config_path);wchar_t *slash=wcsrchr(out,L'\\');if(!slash)return FALSE;*slash=0;return TRUE;
 }
 static void trial_busy_ui(BOOL busy){
- if(!ui_ready)return;for(int i=0;i<7;i++)EnableWindow(ui_general_controls[i],!busy);InvalidateRect(ui_body,NULL,FALSE);
+ if(!ui_ready)return;for(int i=0;i<7;i++)EnableWindow(ui_general_controls[i],!busy&&i!=4&&i!=5);InvalidateRect(ui_body,NULL,FALSE);
 }
 static void trial_error(const wchar_t *code){
  const wchar_t *message;
  if(!wcscmp(code,L"CLOSE_GAME_FIRST"))message=ui_text(L"Đóng game trước khi chuẩn bị hoặc hoàn tác gói thử.",L"Close the game before preparing or removing the trial package.");
+ else if(!wcscmp(code,L"TRIAL_SUSPENDED"))message=ui_text(L"Đã dừng bản vá 0.4 sau báo cáo văng game. Hãy dùng Hoàn tác.",L"The 0.4 patch is suspended after a reported crash. Use Remove trial.");
  else if(!wcscmp(code,L"UNSUPPORTED_BUILD")||!wcscmp(code,L"UNSUPPORTED_ASSEMBLY"))message=ui_text(L"Bản game đã khác gói 3.8 đã kiểm tra. Chưa áp dụng bản vá.",L"This build differs from the inspected 3.8 package. No patch was applied.");
  else if(!wcscmp(code,L"UNOWNED_OR_CHANGED_PACKAGE"))message=ui_text(L"Gói thử có sẵn không khớp dữ liệu tool. Không tự ghi đè hoặc xóa.",L"The existing trial package is untracked or changed. It was left intact.");
  else if(!wcscmp(code,L"OTHER_INSTALL_ACTIVE"))message=ui_text(L"Hãy Hoàn tác gói thử cũ trước khi đổi sang bản cài đặt khác.",L"Remove the previous trial package before using another installation.");
@@ -31,7 +32,7 @@ static BOOL trial_start(BOOL then_launch){
  wchar_t *slash=wcsrchr(helper,L'\\');if(!slash){trial_error(L"HELPER_MISSING");return TRUE;}wcscpy(slash+1,L"Sora-Gameplay.exe");
  if(GetFileAttributesW(helper)==INVALID_FILE_ATTRIBUTES){wcscpy(launch_notice,ui_text(L"Thiếu Sora-Gameplay.exe. Hãy giải nén đầy đủ ZIP mới.",L"Sora-Gameplay.exe is missing. Extract the complete new ZIP."));return TRUE;}
  if(swprintf(trial_result,32768,L"%ls\\gameplay-result.ini",state)<0){trial_error(L"PATH_TOO_LONG");return TRUE;}DeleteFileW(trial_result);
- if(swprintf(command,66560,L"\"%ls\" --exe \"%ls\" --state \"%ls\"%ls%ls",helper,game_path,state,then_launch&&trial_cd?L" --feature no-cooldown":L"",then_launch&&trial_damage?L" --feature ignore-local-damage":L"")<0){trial_error(L"PATH_TOO_LONG");return TRUE;}
+ if(swprintf(command,66560,L"\"%ls\" --exe \"%ls\" --state \"%ls\"",helper,game_path,state)<0){trial_error(L"PATH_TOO_LONG");return TRUE;}
  trial_job=CreateJobObjectW(NULL,NULL);JOBOBJECT_EXTENDED_LIMIT_INFORMATION limits={0};limits.BasicLimitInformation.LimitFlags=JOB_OBJECT_LIMIT_KILL_ON_JOB_CLOSE;
  if(!trial_job||!SetInformationJobObject(trial_job,JobObjectExtendedLimitInformation,&limits,sizeof(limits))){if(trial_job)CloseHandle(trial_job);trial_job=NULL;trial_error(L"HELPER_START_FAILED");return TRUE;}
  STARTUPINFOW startup={0};startup.cb=sizeof(startup);PROCESS_INFORMATION process={0};
@@ -42,7 +43,7 @@ static BOOL trial_start(BOOL then_launch){
  wcscpy(launch_notice,ui_text(L"Đang kiểm tra và chuẩn bị gói thử… Menu vẫn dùng được.",L"Checking and preparing the trial package… The menu remains responsive."));trial_busy_ui(TRUE);return TRUE;
 }
 static BOOL trial_before_launch(void){
- if(trial_process||trial_cd||trial_damage)return trial_start(TRUE);
+ if(trial_process)return trial_start(TRUE);
  wchar_t state[32768],manifest[32768],target[32768];
  if(trial_state_dir(state)&&swprintf(manifest,32768,L"%ls\\gameplay-trial.json",state)>0&&GetFileAttributesW(manifest)!=INVALID_FILE_ATTRIBUTES)return trial_start(TRUE);
  wchar_t base[32768];wcscpy(base,game_path);wchar_t *slash=wcsrchr(base,L'\\');if(slash)*slash=0;
@@ -69,9 +70,7 @@ static BOOL trial_save(BOOL cd,BOOL damage){
  wchar_t value[8];swprintf(value,8,L"%u",(cd?1u:0u)|(damage?2u:0u));return config_path[0]&&WritePrivateProfileStringW(L"GameTrial",L"Flags",value,config_path);
 }
 static void trial_toggle(int id){
- if(trial_process)return;BOOL cd=id==UI_TRIAL_CD?!trial_cd:trial_cd,damage=id==UI_TRIAL_DAMAGE?!trial_damage:trial_damage;
- if(!trial_save(cd,damage))wcscpy(launch_notice,ui_text(L"Không lưu được lựa chọn thử nghiệm.",L"Could not save the trial selection."));
- else {trial_cd=cd;trial_damage=damage;wcscpy(launch_notice,ui_text(L"Đã lưu cho lần mở game tiếp theo. Đóng game rồi bấm Mở game để áp dụng.",L"Saved for the next launch. Close the game, then use Open game to apply."));ui_apply_language();}
+ (void)id;if(trial_process)return;trial_cd=trial_damage=FALSE;trial_save(FALSE,FALSE);trial_error(L"TRIAL_SUSPENDED");ui_apply_language();
  if(ui_ready)InvalidateRect(ui_body,NULL,FALSE);
 }
 static void trial_remove(void){

@@ -1,6 +1,6 @@
 # WuWa PC — menu và mở game
 
-Bản 0.4.0-experimental thêm chuẩn bị gói C# thử nghiệm cho No Cooldown và chặn hai luồng sát thương cục bộ. Hiệu lực trong WuWa thật chưa xác nhận; không có thông báo “gameplay READY”. Damage Multiplier chưa hỗ trợ.
+Bản 0.4.1-recovery khôi phục trạng thái trước gói thử 0.4 sau báo cáo game đóng. Nó tạm dừng hai lựa chọn cũ, gỡ riêng gói do tool tạo có hash còn khớp trước khi mở game. Chưa xác định nguyên nhân gốc của lần văng và chưa có backend bật/tắt gameplay trong phiên game.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
@@ -9,17 +9,15 @@ Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 - Khu vực SEA.
 - EXE đã gửi có tài nguyên phiên bản UE4 4.26; chưa xác minh API đồ họa khi game chạy. Chuỗi trên là bằng chứng từ ảnh màn hình, không phải chứng nhận tương thích executable.
 
-## Dùng thử
+## Khôi phục
 
-1. Thoát hẳn bản tool cũ bằng **Thoát**, giải nén toàn bộ ZIP vào thư mục riêng. Giữ cả `WuWa-PC.exe` và `Sora-Gameplay.exe` trong cùng thư mục; không cần cài Python.
-2. Chạy `Start-WuWa-PC.cmd`, mở menu bằng phím đã lưu (mặc định F1). Trong Tổng quan, chọn EXE tại `Client\Binaries\Win64\Client-Win64-Shipping.exe`.
-3. **Đóng game trước khi áp dụng hoặc hoàn tác gói thử.** Bật No Cooldown hoặc Chặn sát thương rồi bấm **Mở game**. Backend xác minh đúng pakchunk18 đã phân tích và tạo riêng `Client\Content\Paks\zz_SoraWW_Experimental_P.pak` chứa DLL được chuẩn bị trên máy bạn. Các PAK/SIG/EXE gốc giữ nguyên. Tool không thay kiểm tra chữ ký hoặc tìm cách ép client chấp nhận gói.
-4. Lựa chọn áp dụng ở lần mở game tiếp theo; không phải công tắc tức thời trong game. Menu vẫn đáp ứng trong lúc chuẩn bị. Khi chuẩn bị xong, tool mở EXE với `-krqlv=sd` và ẩn menu sau khi nhận diện cửa sổ.
-5. **Thử No Cooldown riêng trước** để kiểm tra client có nạp gói không. Chuẩn bị gói thành công và tìm thấy cửa sổ không chứng minh gameplay đã có hiệu lực. Nếu game không mở hoặc không thay đổi, đóng game rồi dùng **Hoàn tác gói thử**. Hoàn tác chỉ xóa gói có hash khớp bản do tool ghi, không tự xóa gói đã bị thay đổi hoặc không có hồ sơ sở hữu.
-6. Chặn sát thương chỉ thử hai hàm cục bộ `ProcessDamage` và `FallInjure` của role thuộc người chơi; chưa xác nhận bảo vệ HP từ server, mọi loại sát thương hay đồng bộ mạng. No Cooldown cũng cần xác nhận hoạt động, số lượt kỹ năng và giao diện trong game thật.
-7. Phím menu vẫn tùy chỉnh ở tab Phím tắt → bấm ô phím → nhấn tổ hợp → **Lưu**. Nút × chỉ ẩn menu; **Thoát** đóng tool. Thoát trong lúc chuẩn bị sẽ dừng tiến trình chuẩn bị riêng của tool, không đóng game.
+1. Đóng game và **Thoát** hẳn tool 0.4. Giải nén toàn bộ ZIP mới vào thư mục riêng, giữ `WuWa-PC.exe` và `Sora-Gameplay.exe` cạnh nhau.
+2. Chạy `Start-WuWa-PC.cmd`, mở menu bằng phím đã lưu. Đường dẫn EXE và phím tùy chỉnh được giữ nguyên. Hai lựa chọn cũ hiển thị **Tạm dừng**.
+3. Bấm **Khôi phục / Mở game**. Nếu có gói thử do tool ghi, backend đối chiếu hồ sơ/hash rồi gỡ `Client\Content\Paks\zz_SoraWW_Experimental_P.pak` trước khi mở game. PAK/SIG/EXE gốc không bị sửa.
+4. Nếu game vẫn đóng sau khi đã gỡ gói, cần kiểm tra lỗi/crash log thực tế. Bản này không khẳng định đã sửa nguyên nhân gốc. Không bật lại bản vá 0.4 để thử lặp.
+5. Nếu gói không có hồ sơ sở hữu hoặc hash đã thay đổi, tool sẽ báo lỗi và không tự xóa. Không xóa các PAK gốc để xử lý.
 
-Đường dẫn, phím và lựa chọn được lưu tại `%LOCALAPPDATA%\WuWaPC`. Hồ sơ gói thử ở `gameplay-trial.json` cho phép hoàn tác. Nếu game cập nhật làm đổi hash pakchunk18, tool từ chối áp dụng; không dùng offset phỏng đoán cho bản khác. Không đăng PAK/DLL đầu ra lên GitHub vì chứa code game.
+Đây là bản khôi phục, không có chức năng gameplay đang hoạt động. Việc bật/tắt ngay trong phiên game cần một backend khác được kiểm chứng; các lựa chọn 0.4 chỉ sửa file trước lúc game khởi động và không đáp ứng yêu cầu đó.
 
 ## Giao diện theo ảnh tham khảo
 
@@ -36,7 +34,7 @@ Nền tối có độ trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Ph�
 
 Bộ dò chỉ đọc lớp cửa sổ, tên tiến trình và thông tin cửa sổ. Nó đòi hỏi `UnrealWindow` và executable `Client-Win64-Shipping.exe`. Khi đã chọn EXE, đường dẫn tiến trình phải khớp đường dẫn đã lưu; khi chưa chọn, nó dùng thêm tên cửa sổ/thư mục phù hợp Wuthering Waves. Nhiều cửa sổ khớp hoặc không xác minh được executable sẽ không tự chọn. Không yêu cầu quyền quản trị để vượt lỗi nhận diện. Nếu di chuyển hoặc cập nhật game sang vị trí khác, dùng Chọn EXE để chọn lại. Nếu sau hai phút chưa thấy cửa sổ, tool hiện thông báo để bạn kiểm tra game; không tự mở lại liên tục.
 
-Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không chụp màn hình. Nó tạo riêng gói thử khi bạn bật lựa chọn và bấm Mở game; lưu hồ sơ hash và kết quả chuẩn bị cục bộ. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
+Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không chụp màn hình. Bản khôi phục chỉ gỡ gói có hash khớp hồ sơ cục bộ của tool; không tạo gói mới. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
 
 ## Kiểm chứng
 

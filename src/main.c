@@ -216,9 +216,9 @@ int WINAPI wWinMain(HINSTANCE module,HINSTANCE previous,PWSTR command,int show){
  WNDCLASSW klass={0};klass.hInstance=module;klass.lpfnWndProc=window_proc;klass.lpszClassName=APP_CLASS;klass.hCursor=LoadCursorW(NULL,IDC_ARROW);klass.hIcon=LoadIconW(NULL,IDI_APPLICATION);klass.hbrBackground=background;
  if(!RegisterClassW(&klass)){CloseHandle(instance_mutex);return 3;}
  RECT desktop={0};SystemParametersInfoW(SPI_GETWORKAREA,0,&desktop,0);int menu_height=758;if(desktop.bottom-desktop.top>400&&desktop.bottom-desktop.top<790)menu_height=desktop.bottom-desktop.top-32;
- app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Experimental gameplay 0.4",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
+ app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Recovery 0.4.1",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
  init_config();struct WKey saved;if(config_path[0]&&read_binding(config_path,&saved))menu_key=saved;
- load_game_path();unsigned trial_flags=GetPrivateProfileIntW(L"GameTrial",L"Flags",0,config_path);if(trial_flags<=3){trial_cd=(trial_flags&1)!=0;trial_damage=(trial_flags&2)!=0;}
+ load_game_path();trial_cd=trial_damage=FALSE;trial_save(FALSE,FALSE);
  ui_create();
  tray.cbSize=sizeof(tray);tray.hWnd=app;tray.uID=1;tray.uFlags=NIF_MESSAGE|NIF_ICON|NIF_TIP;tray.uCallbackMessage=TRAY_MESSAGE;tray.hIcon=klass.hIcon;
  update_key_text();tray_added=Shell_NotifyIconW(NIM_ADD,&tray);key_registered=set_key_registration(menu_key);poll_game();center_panel();SetTimer(app,1,750,NULL);SetTimer(app,2,50,NULL);

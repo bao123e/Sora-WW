@@ -15,6 +15,7 @@ def lifecycle(exe,fixture):
     user.FindWindowW.argtypes=[wt.LPCWSTR,wt.LPCWSTR];user.FindWindowW.restype=wt.HWND
     user.GetWindowThreadProcessId.argtypes=[wt.HWND,ctypes.POINTER(wt.DWORD)]
     user.IsWindowVisible.argtypes=[wt.HWND];user.IsWindowVisible.restype=wt.BOOL
+    user.IsWindowEnabled.argtypes=[wt.HWND];user.IsWindowEnabled.restype=wt.BOOL
     user.PostMessageW.argtypes=[wt.HWND,wt.UINT,wt.WPARAM,wt.LPARAM];user.PostMessageW.restype=wt.BOOL
     user.GetClassNameW.argtypes=[wt.HWND,wt.LPWSTR,ctypes.c_int]
     user.GetWindowTextW.argtypes=[wt.HWND,wt.LPWSTR,ctypes.c_int]
@@ -44,6 +45,8 @@ def lifecycle(exe,fixture):
         settings=Path(directory)/'WuWaPC/settings.ini';settings.parent.mkdir()
         settings.write_text('[Keybinds]\nMenu=135:6\n') # Ctrl+Shift+F24
         for run in range(2):
+            if run==1:
+                settings.write_text(settings.read_text().replace('Flags=0','Flags=3')) # migrate a saved crashing trial selection
             child=subprocess.Popen([str(exe)],env=env)
             try:
                 hwnd=wait_until(lambda:owner_window(child.pid),'No app window')
@@ -88,15 +91,16 @@ def lifecycle(exe,fixture):
                     assert not user.IsWindowVisible(field)
                     user.SendMessageW(hwnd,0x0111,240,0)
                     user.SendMessageW(hwnd,0x0111,241,0)
-                    wait_until(lambda:'Flags=3' in settings.read_text(),'Trial choices were not persisted')
+                    wait_until(lambda:'Flags=0' in settings.read_text(),'Suspended trial was re-enabled')
                 else:
                     assert not user.GetWindowLongPtrW(hwnd,-20)&8,'Pin preference did not reload'
                     raw=settings.read_text();assert 'Opacity=85' in raw and 'Language=en' in raw
-                    assert 'Flags=3' in raw,'Trial choices did not reload'
+                    assert 'Flags=0' in raw,'Old trial choices were not reset'
                     body=hotkey_field(hwnd,'WuWaPCContent')
                     for control_id in (240,241):
                         text=ctypes.create_unicode_buffer(160);user.GetWindowTextW(user.GetDlgItem(body,control_id),text,160)
-                        assert text.value=='On next launch','Trial selection was not restored in the UI'
+                        assert text.value=='Suspended','Suspended trial was shown as available'
+                        assert not user.IsWindowEnabled(user.GetDlgItem(body,control_id))
                 user.SendMessageW(hwnd,0x0111,204,0) # Footer Change shortcut
                 assert user.IsWindowVisible(field)
                 user.SendMessageW(hwnd,0x0111,200,0) # Hide editing field and restore shortcut registration
@@ -108,25 +112,30 @@ def lifecycle(exe,fixture):
                 assert child.wait(timeout=10)==0
             finally:
                 if child.poll() is None:child.terminate();child.wait(timeout=5)
-        # Actual app -> frozen backend -> unsupported-input rejection. No game assets.
+        # Actual app -> frozen backend -> owned package removal -> plain synthetic launch.
         encoded=''.join(f'{int.from_bytes(str(fixture).encode("utf-16le")[i:i+2],"little"):04x}' for i in range(0,len(str(fixture).encode('utf-16le')),2))
         settings.write_text('[Keybinds]\nMenu=135:6\n[Game]\nExecutableUtf16Hex='+encoded+'\n[GameTrial]\nFlags=1\n')
         pak_folder=fixture.parents[2]/'Content/Paks';pak_folder.mkdir(parents=True,exist_ok=True)
         original=pak_folder/'pakchunk18-WindowsNoEditor.pak';original.write_bytes(b'synthetic unsupported package')
+        trial=pak_folder/'zz_SoraWW_Experimental_P.pak';trial.write_bytes(b'synthetic previously installed overlay')
+        manifest=settings.parent/'gameplay-trial.json'
+        manifest.write_text(json.dumps({'schema':'SORA-WW-OWNED-TRIAL-1','exe':str(fixture),'destination':str(trial),'sha256':hashlib.sha256(trial.read_bytes()).hexdigest()}))
         child=subprocess.Popen([str(exe)],env=env)
         try:
             hwnd=wait_until(lambda:owner_window(child.pid),'Trial test app missing')
             user.PostMessageW(hwnd,0x8002,0,0);wait_until(lambda:user.IsWindowVisible(hwnd),'Trial menu did not open')
-            user.SendMessageW(hwnd,0x0111,231,0) # Open game starts file preparer first
+            user.SendMessageW(hwnd,0x0111,231,0) # Recover / Open game removes the previous overlay first
             user.SendMessageW(hwnd,0x0111,201,0) # Parent must remain responsive during preparation
             field=hotkey_field(hwnd);assert user.IsWindowVisible(field)
             result=settings.parent/'gameplay-result.ini'
-            wait_until(lambda:result.exists() and 'UNSUPPORTED_BUILD' in result.read_text(),'Frozen backend did not reject unsupported input',seconds=60)
-            time.sleep(1)
+            wait_until(lambda:result.exists() and 'REMOVED' in result.read_text(),'Frozen backend did not remove the old overlay',seconds=60)
+            wait_until(lambda:user.FindWindowW('UnrealWindow','Synthetic launcher fixture'),'Game did not open after removal')
             assert child.poll() is None
-            assert not user.FindWindowW('UnrealWindow','Synthetic launcher fixture'),'Game was launched after backend failure'
             assert original.read_bytes()==b'synthetic unsupported package'
-            assert not (pak_folder/'zz_SoraWW_Experimental_P.pak').exists()
+            assert not trial.exists() and not manifest.exists()
+            assert 'Flags=0' in settings.read_text()
+            fake=user.FindWindowW('UnrealWindow','Synthetic launcher fixture');user.PostMessageW(fake,0x0010,0,0)
+            wait_until(lambda:not user.FindWindowW('UnrealWindow','Synthetic launcher fixture'),'Synthetic game did not close')
             user.PostMessageW(hwnd,0x0111,103,0);assert child.wait(timeout=10)==0
         finally:
             if child.poll() is None:child.terminate();child.wait(timeout=5)
@@ -145,7 +154,7 @@ def main(zig):
             subprocess.run([zig,'cc','-target','x86_64-windows-gnu','-std=c11','-O2','-Wall','-Wextra','-Werror','-Wno-unused-function','-UNDEBUG',str(ROOT/'tests'/f'{name}.c'),*libs,'-o',str(out)],check=True)
             subprocess.run([str(out)],check=True,timeout=45,env=fixture_env)
         lifecycle(exe,fixture)
-    report={'exe_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'commit':os.environ.get('GITHUB_SHA'),'verification_url':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",'windows_runtime_tested':True,'game_runtime_tested':False,'tests':['packaged_exe_self_test','native_core_and_key_transaction','native_controls_conflict_save_rollback_and_geometry','actual_exe_hidden_start_show_hide_exit_and_key_persistence','reference_style_tabs_language_pin_opacity_and_persistence','own_app_ui_previews_no_game_capture','unicode_game_path_persistence_and_corrupt_config','synthetic_game_launch_wait_duplicate_guard_auto_hide_and_timeout','synthetic_target_requires_exact_sd_launch_argument','trial_selection_persistence_and_frozen_backend_failure_does_not_launch_game']}
+    report={'exe_sha256':hashlib.sha256(exe.read_bytes()).hexdigest(),'commit':os.environ.get('GITHUB_SHA'),'verification_url':f"https://github.com/{os.environ.get('GITHUB_REPOSITORY')}/actions/runs/{os.environ.get('GITHUB_RUN_ID')}",'windows_runtime_tested':True,'game_runtime_tested':False,'tests':['packaged_exe_self_test','native_core_and_key_transaction','native_controls_conflict_save_rollback_and_geometry','actual_exe_hidden_start_show_hide_exit_and_key_persistence','reference_style_tabs_language_pin_opacity_and_persistence','own_app_ui_previews_no_game_capture','unicode_game_path_persistence_and_corrupt_config','synthetic_game_launch_wait_duplicate_guard_auto_hide_and_timeout','synthetic_target_requires_exact_sd_launch_argument','old_trial_choices_reset_and_disabled','frozen_backend_removes_owned_overlay_before_plain_launch']}
     (ROOT/'dist/windows-verification.json').write_text(json.dumps(report,indent=2)+'\n')
 if __name__=='__main__':
     p=argparse.ArgumentParser(description=__doc__);p.add_argument('--zig',default='zig');main(p.parse_args().zig)
