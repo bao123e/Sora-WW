@@ -37,6 +37,7 @@ static wchar_t config_path[32768];
 static NOTIFYICONDATAW tray;
 
 static WORD key_word(struct WKey key);
+static struct WKey word_key(WORD word);
 static void key_name(struct WKey key,wchar_t *text,size_t cap);
 static void update_key_text(void);
 static void poll_game(void);
