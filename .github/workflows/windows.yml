@@ -1,68 +1,38 @@
-name: Build and verify Windows foundation
+name: Verify read-only gameplay assembly reader
 on:
   workflow_dispatch:
-  push:
-    branches: [main]
 permissions:
   contents: read
 jobs:
-  windows:
+  gameplay_reader:
     runs-on: windows-latest
-    timeout-minutes: 12
+    timeout-minutes: 5
     permissions:
       contents: write
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
-      - uses: mlugg/setup-zig@v2
-        with:
-          version: '0.14.1'
-      - name: Build Windows x64 and check PE imports
-        run: python scripts/build.py --zig zig
-      - name: Verify native UI, shortcuts and the actual EXE lifecycle
-        run: python scripts/verify_windows.py --zig zig
-      - name: Package verified binary and source
-        run: python scripts/package.py
-      - name: Export test-app UI previews for review
-        if: github.ref == 'refs/heads/feature/reference-ui'
+      - name: Test managed PE carving and integrity rejection
+        shell: powershell
+        run: ./tools/gameplay-reader/Read-Gameplay.ps1 -SelfTest
+      - name: Package scripts only
         shell: python
         run: |
           from pathlib import Path
-          import base64
-          for path in sorted(Path('dist').glob('ui-preview-*.png')):
-            encoded=base64.b64encode(path.read_bytes()).decode('ascii')
-            parts=[encoded[i:i+3000] for i in range(0,len(encoded),3000)]
-            for index,part in enumerate(parts):
-              print(f'SORA_UI_PREVIEW|{path.name}|{index}|{len(parts)}|{part}',flush=True)
-      - name: Upload tested packages
-        uses: actions/upload-artifact@v4
-        with:
-          name: WuWa-PC-verified-packages
-          path: |
-            dist/*.zip
-            dist/*.sha256
-            dist/windows-verification.json
-            dist/ui-preview-*.png
-      - name: Publish foundation preview
-        if: github.ref == 'refs/heads/main'
+          from zipfile import ZipFile,ZIP_DEFLATED
+          import os,hashlib
+          root=Path('tools/gameplay-reader');out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Gameplay-Reader-v1.zip'
+          script=(root/'GameplayReader.cs').read_text()
+          assert 'AssemblyName.GetAssemblyName' in script and 'sha.ComputeHash' in script
+          for forbidden in ['ReadProcessMemory','WriteProcessMemory','CreateRemoteThread','Assembly.Load','Invoke-WebRequest']:
+            assert forbidden not in script
+          with ZipFile(out,'w',ZIP_DEFLATED) as z:
+            for name in ['GameplayReader.cs','Read-Gameplay.ps1','Read-Gameplay.cmd','README.vi.txt']:z.write(root/name,name)
+          with ZipFile(out) as z:assert z.testzip() is None and len(z.namelist())==4
+          Path(str(out)+'.sha256').write_text(hashlib.sha256(out.read_bytes()).hexdigest()+'  '+out.name+'\n')
+      - name: Publish tested reader
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: |
-          version="$(python -c "import json;print(json.load(open('dist/build.json'))['version'])")"
-          tag="v$version"
-          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
-            target="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)"
-            if [ "$target" = "$GITHUB_SHA" ]; then exit 0; fi
-            echo 'This version already exists for another commit. Bump the version before publishing.'
-            exit 1
-          fi
-          cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Giao diện theo ảnh tham khảo của chủ tool: nền tối trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Phím tắt, nhóm có đường phân cách, cuộn nội dung và thanh cuối cố định. Nút Ghim, độ đậm menu, tiếng Việt/English và phím tùy chỉnh đều hoạt động và được lưu lại. Đây là thay đổi UI/UX; chưa có chức năng gameplay.
-
-          Thoát hẳn bản cũ bằng Exit, tải ZIP win64 rồi giải nén TOÀN BỘ. Chạy Start-WuWa-PC.cmd, nhấn phím menu đã lưu (mặc định F1). Mục Đổi phím / Phím tắt -> nhập tổ hợp -> Lưu. Cấu hình cũ được giữ tại LocalAppData/WuWaPC.
-
-          Windows CI đã kiểm tra EXE thật, tabs, lưu phím, khôi phục khi trùng/lưu lỗi, ngôn ngữ, ghim và độ trong suốt qua lần khởi động tiếp theo. Ảnh xem trước chỉ chụp chính ứng dụng thử nghiệm trên CI, không có game/tài khoản. Chủ tool đã xác nhận bản nền nhận diện được cửa sổ WuWa; giao diện mới cần xác nhận hiển thị trong game thực tế.
-          NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Dark UI preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+        run: gh release upload v0.3.1-launcher-preview "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v1.zip" "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
