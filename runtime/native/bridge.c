@@ -55,7 +55,7 @@ static void *open_sibling(const wchar_t *filename) {
  return assembly_open(domain,utf8);
 }
 static const char *initialize(void) {
- if(execute)return NULL;
+ if(execute){thread=thread_attach(domain);return thread?NULL:"MONO_ATTACH_FAILED";}
  if(!loaded_mono())return "MONO_EXPORTS_UNAVAILABLE";
  domain=root_domain();if(!domain)return "MONO_NOT_READY";
  if(!thread)thread=thread_attach(domain);
@@ -66,7 +66,7 @@ static const char *initialize(void) {
  void *klass=class_from_name(image,"Sora.Runtime","Entry");if(!klass)return "ENTRY_NOT_FOUND";
  execute=class_method(klass,"Execute",1);return execute?NULL:"METHOD_NOT_FOUND";
 }
-static void command(const char *request,char *response,size_t length) {
+static void command_attached(const char *request,char *response,size_t length) {
  if(!execute && !strcmp(request,"OFF")){snprintf(response,length,"OFF");return;}
  const char *error=initialize();if(error){snprintf(response,length,"%s",error);return;}
  void *text=string_new(domain,request), *exception=NULL, *args[1]={text};
@@ -75,6 +75,12 @@ static void command(const char *request,char *response,size_t length) {
  if(exception || !answer){snprintf(response,length,"MANAGED_EXCEPTION");return;}
  char *utf8=string_utf8(answer);snprintf(response,length,"%s",utf8?utf8:"INVALID_RESPONSE");
  if(utf8)free_mono(utf8);
+}
+static void command(const char *request,char *response,size_t length) {
+ command_attached(request,response,length);
+ // Never leave an embedding thread attached while blocking on a native pipe:
+ // cooperative Mono collectors can otherwise wait forever for that thread.
+ if(thread){thread_detach(thread);thread=NULL;}
 }
 static BOOL pipe_security(SECURITY_ATTRIBUTES *security,PSECURITY_DESCRIPTOR *descriptor) {
  HANDLE token=NULL;DWORD count=0;
@@ -112,7 +118,7 @@ static DWORD WINAPI serve(void *unused) {
   }
   char ignored[192];command("OFF",ignored,sizeof(ignored));
   DisconnectNamedPipe(pipe);
-  // Keep the thread and embedding attachment for reconnect; no unsafe unload.
+  // Keep the native worker for reconnect, detached from the managed runtime.
  }
 }
 BOOL WINAPI DllMain(HINSTANCE module,DWORD reason,void *reserved) {
