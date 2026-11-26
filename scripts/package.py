@@ -4,6 +4,10 @@ import hashlib,json,os
 ROOT=Path(__file__).resolve().parents[1];DIST=ROOT/'dist'
 metadata=json.loads((DIST/'build.json').read_text());binary=DIST/'WuWa-PC.exe'
 assert hashlib.sha256(binary.read_bytes()).hexdigest()==metadata['sha256']
+backend=DIST/'Sora-Gameplay.exe';backend_metadata=json.loads((DIST/'backend-build.json').read_text())
+assert backend_metadata['windows_self_tested'] and not backend_metadata['game_runtime_tested']
+assert hashlib.sha256(backend.read_bytes()).hexdigest()==backend_metadata['sha256']
+metadata['trial_backend']=backend_metadata
 verification=DIST/'windows-verification.json'
 if os.name=='nt':
     assert verification.exists(),'Run scripts/verify_windows.py before publishing Windows builds'
@@ -15,13 +19,13 @@ if verification.exists():
 for name,digest in metadata['source_sha256'].items():assert hashlib.sha256((ROOT/name).read_bytes()).hexdigest()==digest
 customer=DIST/('WuWa-PC-'+metadata['version']+'-win64.zip')
 with ZipFile(customer,'w',ZIP_DEFLATED,compresslevel=9) as z:
-    z.write(binary,'WuWa-PC.exe');z.write(DIST/'build.json','build.json')
+    z.write(binary,'WuWa-PC.exe');z.write(backend,'Sora-Gameplay.exe');z.write(DIST/'THIRD_PARTY_NOTICES.txt','THIRD_PARTY_NOTICES.txt');z.write(DIST/'build.json','build.json')
     for name in ['Start-WuWa-PC.cmd','Check-Windows.cmd','LICENSE']:z.write(ROOT/name,name)
     z.write(ROOT/'README.vi.md','README.vi.txt')
-    z.writestr('SHA256SUMS.txt',metadata['sha256']+'  WuWa-PC.exe\n')
+    z.writestr('SHA256SUMS.txt',metadata['sha256']+'  WuWa-PC.exe\n'+backend_metadata['sha256']+'  Sora-Gameplay.exe\n')
 source=DIST/('WuWa-PC-'+metadata['version']+'-source.zip')
 with ZipFile(source,'w',ZIP_DEFLATED,compresslevel=9) as z:
-    for directory in ['src','scripts','tests','.github']:
+    for directory in ['src','scripts','tests','.github','tools/gameplay-prototype']:
         for path in sorted((ROOT/directory).rglob('*')):
             if path.is_file() and '__pycache__' not in path.parts:z.write(path,str(path.relative_to(ROOT)))
     for name in ['README.md','README.vi.md','LICENSE','Start-WuWa-PC.cmd','Check-Windows.cmd','.gitignore','.gitattributes']:z.write(ROOT/name,name)

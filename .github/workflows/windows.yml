@@ -18,8 +18,15 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: '0.14.1'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install file preparer build dependencies
+        run: python -m pip install -r tools/gameplay-prototype/requirements.txt pyinstaller==6.16.0
       - name: Build Windows x64 and check PE imports
         run: python scripts/build.py --zig zig
+      - name: Build and verify frozen file preparer
+        run: python scripts/build_backend.py
       - name: Verify native UI, shortcuts and the actual EXE lifecycle
         run: python scripts/verify_windows.py --zig zig
       - name: Package verified binary and source
@@ -45,7 +52,7 @@ jobs:
             dist/windows-verification.json
             dist/ui-preview-*.png
       - name: Publish foundation preview
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/game-launcher'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/gameplay-trial'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,10 +66,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Sửa lệnh Mở game để truyền tham số -krqlv=sd do chủ tool cung cấp cho bản SD. EXE và tham số được truyền riêng qua Windows ShellExecuteEx; không cần sửa tên file hay tạo shortcut. Giữ đường dẫn, phím menu và thiết lập đã lưu.
+          Bản thử 0.4 tích hợp chuẩn bị gói C# ngoại tuyến cho No Cooldown và chặn hai luồng sát thương cục bộ, chỉ cho role thuộc người chơi. Các lựa chọn được lưu và áp dụng ở lần mở game sau. Damage Multiplier chưa hỗ trợ. Hiệu lực gameplay trong WuWa thật chưa được xác nhận.
 
-          Thoát bản cũ bằng Thoát, giải nén toàn bộ ZIP win64, chạy Start-WuWa-PC.cmd và mở menu bằng phím đã lưu. Bấm Mở game trong Tổng quan. Nếu chưa chọn đường dẫn, chọn Client/Binaries/Win64/Client-Win64-Shipping.exe.
+          Giải nén TOÀN BỘ ZIP, gồm WuWa-PC.exe và Sora-Gameplay.exe. Đóng game trước khi thay gói. Trong Tổng quan, bật lựa chọn thử rồi bấm Mở game. Backend đối chiếu đúng pakchunk18 đã phân tích và tạo riêng zz_SoraWW_Experimental_P.pak. Không thay PAK/SIG/EXE gốc, không sửa kiểm tra chữ ký hoặc tiêm tiến trình. Hoàn tác gói thử chỉ xóa gói do tool tạo có hash còn khớp. Tool dừng nếu game đang chạy, bản game khác hoặc gói thử đã bị thay đổi.
 
-          Windows CI khởi chạy EXE mô phỏng chỉ tạo cửa sổ khi nhận đúng -krqlv=sd và đúng thư mục làm việc; đồng thời kiểm tra đường dẫn Unicode, chống mở trùng, chờ cửa sổ và tự ẩn menu. Chưa xác nhận việc vào WuWa thật; ba chức năng gameplay vẫn chưa triển khai.
+          CI kiểm tra control/phím, chọn đường dẫn, backend Windows đóng gói độc lập, gói PAK đọc lại, hash, hoàn tác và từ chối đầu vào sai. Kiểm tra với đầu vào thật đã chạy ngoại tuyến riêng; chưa chạy game thật. Đây là bản thử có thể không được client nạp; không suy ra hiệu lực từ trạng thái tìm thấy cửa sổ hoặc chuẩn bị gói thành công.
           NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Game launcher preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Experimental gameplay trial" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false

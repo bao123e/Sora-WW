@@ -2,11 +2,11 @@
 
 Khung tool Windows dành cho Wuthering Waves, phát triển từng bước và xác minh riêng từng phần.
 
-**[Tải bản khung Windows](https://github.com/bao123e/Sora-WW/releases/download/v0.3.1-launcher-preview/WuWa-PC-0.3.1-launcher-preview-win64.zip)** · [Releases](https://github.com/bao123e/Sora-WW/releases) · [Hướng dẫn đầy đủ](README.vi.md)
+**[Tải bản khung Windows](https://github.com/bao123e/Sora-WW/releases/download/v0.4.0-experimental/WuWa-PC-0.4.0-experimental-win64.zip)** · [Releases](https://github.com/bao123e/Sora-WW/releases) · [Hướng dẫn đầy đủ](README.vi.md)
 
 Giao diện dùng nền tối trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Phím tắt và thanh đổi phím/ngôn ngữ ở cuối theo ảnh tham khảo của chủ tool. Có Ghim, cuộn nội dung, độ đậm menu và tiếng Việt/English được lưu lại.
 
-Bản 0.3.1 truyền tham số `-krqlv=sd` khi mở EXE của bản SD. Có chọn/lưu EXE và mở game từ menu, ngăn mở trùng khi game đang tải, tự ẩn sau khi nhận diện cửa sổ theo đường dẫn đã chọn. Có menu mặc định ẩn, căn giữa cửa sổ game, phím mở menu tùy chỉnh và lưu lại, biểu tượng khay hệ thống, nhận diện cửa sổ/tiến trình ở chế độ chỉ đọc. **Chưa có chức năng gameplay.**
+Bản 0.3.1 truyền tham số `-krqlv=sd` khi mở EXE của bản SD. Có chọn/lưu EXE và mở game từ menu, ngăn mở trùng khi game đang tải, tự ẩn sau khi nhận diện cửa sổ theo đường dẫn đã chọn. Có menu mặc định ẩn, căn giữa cửa sổ game, phím mở menu tùy chỉnh và lưu lại, biểu tượng khay hệ thống, nhận diện cửa sổ/tiến trình ở chế độ chỉ đọc. **Có bộ chuẩn bị gói gameplay thử nghiệm; hiệu lực trong game chưa được xác nhận.**
 
 Giải nén toàn bộ ZIP → chạy `Start-WuWa-PC.cmd` → nhấn **F1** mở menu → **Chọn EXE…** → chọn `Client-Win64-Shipping.exe` → **Mở game**. Nếu game yêu cầu launcher chính thức, mở bằng launcher; tool vẫn dò theo đường dẫn đã lưu. Đổi phím bằng ô phím và **Lưu**. X chỉ ẩn; **Thoát** thoát hẳn. Game nên ở chế độ cửa sổ hoặc không viền để thử menu.
 
@@ -19,3 +19,5 @@ GitHub Actions build bằng Zig 0.14.1, kiểm tra PE x64, chạy các test logi
 Local Linux: `python scripts/test.py` và `python scripts/build.py --zig /path/to/zig`. Trên Windows: `python scripts/verify_windows.py --zig zig`, rồi `python scripts/package.py`.
 
 Dự án này độc lập với SoraVynx. Không chứa issuer/key/token của tool cũ, không sửa bộ nhớ game, tiêm DLL hay gọi mạng. Giai đoạn tiếp theo sẽ dựa trên kết quả kiểm tra thực tế, không suy diễn từ việc build thành công.
+
+Bản 0.4 tích hợp lựa chọn No Cooldown và chặn hai luồng sát thương cục bộ cho role của người chơi. Áp dụng khi game đã đóng và mở lại từ tool; có Hoàn tác gói thử theo hash. Damage Multiplier chưa hỗ trợ. ZIP kèm Sora-Gameplay.exe nên không cần cài Python. Các gói gốc không bị thay và không có bước sửa kiểm tra chữ ký. Đọc hướng dẫn bản thử trước khi dùng; trạng thái tìm thấy cửa sổ không xác nhận hiệu lực gameplay.

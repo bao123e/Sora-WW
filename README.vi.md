@@ -1,6 +1,6 @@
 # WuWa PC — menu và mở game
 
-Bản 0.3.1-launcher-preview thêm chọn/lưu EXE và mở game từ menu. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
+Bản 0.4.0-experimental thêm chuẩn bị gói C# thử nghiệm cho No Cooldown và chặn hai luồng sát thương cục bộ. Hiệu lực trong WuWa thật chưa xác nhận; không có thông báo “gameplay READY”. Damage Multiplier chưa hỗ trợ.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
@@ -11,14 +11,15 @@ Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
 ## Dùng thử
 
-1. Giải nén toàn bộ gói vào một thư mục riêng. Để game ở chế độ cửa sổ hoặc không viền để dùng menu.
-2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần gửi file game lớn.
-3. Menu mặc định ẩn. Nhấn **F1**, hoặc nhấp biểu tượng WuWa PC dưới khay hệ thống để mở.
-4. Trong Tổng quan, chọn **Chọn EXE…**, tới `Client\Binaries\Win64\Client-Win64-Shipping.exe` của bản cài đặt. Đường dẫn được lưu riêng cùng cấu hình, hỗ trợ thư mục có dấu. Bấm **Mở game** để mở EXE đã chọn với tham số `-krqlv=sd` do chủ tool cung cấp cho bản SD. Không cần thêm tham số vào tên file hoặc tạo shortcut. Nếu game yêu cầu launcher chính thức, dùng launcher đó; tool vẫn nhận diện cửa sổ của EXE đã chọn. Menu chỉ tự ẩn sau khi thấy cửa sổ game, không dựa vào thời gian tải cố định. Bấm mở nhiều lần sẽ không mở thêm phiên khi tiến trình game đang chạy.
-5. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
-6. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
+1. Thoát hẳn bản tool cũ bằng **Thoát**, giải nén toàn bộ ZIP vào thư mục riêng. Giữ cả `WuWa-PC.exe` và `Sora-Gameplay.exe` trong cùng thư mục; không cần cài Python.
+2. Chạy `Start-WuWa-PC.cmd`, mở menu bằng phím đã lưu (mặc định F1). Trong Tổng quan, chọn EXE tại `Client\Binaries\Win64\Client-Win64-Shipping.exe`.
+3. **Đóng game trước khi áp dụng hoặc hoàn tác gói thử.** Bật No Cooldown hoặc Chặn sát thương rồi bấm **Mở game**. Backend xác minh đúng pakchunk18 đã phân tích và tạo riêng `Client\Content\Paks\zz_SoraWW_Experimental_P.pak` chứa DLL được chuẩn bị trên máy bạn. Các PAK/SIG/EXE gốc giữ nguyên. Tool không thay kiểm tra chữ ký hoặc tìm cách ép client chấp nhận gói.
+4. Lựa chọn áp dụng ở lần mở game tiếp theo; không phải công tắc tức thời trong game. Menu vẫn đáp ứng trong lúc chuẩn bị. Khi chuẩn bị xong, tool mở EXE với `-krqlv=sd` và ẩn menu sau khi nhận diện cửa sổ.
+5. **Thử No Cooldown riêng trước** để kiểm tra client có nạp gói không. Chuẩn bị gói thành công và tìm thấy cửa sổ không chứng minh gameplay đã có hiệu lực. Nếu game không mở hoặc không thay đổi, đóng game rồi dùng **Hoàn tác gói thử**. Hoàn tác chỉ xóa gói có hash khớp bản do tool ghi, không tự xóa gói đã bị thay đổi hoặc không có hồ sơ sở hữu.
+6. Chặn sát thương chỉ thử hai hàm cục bộ `ProcessDamage` và `FallInjure` của role thuộc người chơi; chưa xác nhận bảo vệ HP từ server, mọi loại sát thương hay đồng bộ mạng. No Cooldown cũng cần xác nhận hoạt động, số lượt kỹ năng và giao diện trong game thật.
+7. Phím menu vẫn tùy chỉnh ở tab Phím tắt → bấm ô phím → nhấn tổ hợp → **Lưu**. Nút × chỉ ẩn menu; **Thoát** đóng tool. Thoát trong lúc chuẩn bị sẽ dừng tiến trình chuẩn bị riêng của tool, không đóng game.
 
-Phím được lưu tại `%LOCALAPPDATA%\WuWaPC\settings.ini`, riêng cho sản phẩm này. Không dùng key, issuer hoặc cấu hình thanh toán của SoraVynx.
+Đường dẫn, phím và lựa chọn được lưu tại `%LOCALAPPDATA%\WuWaPC`. Hồ sơ gói thử ở `gameplay-trial.json` cho phép hoàn tác. Nếu game cập nhật làm đổi hash pakchunk18, tool từ chối áp dụng; không dùng offset phỏng đoán cho bản khác. Không đăng PAK/DLL đầu ra lên GitHub vì chứa code game.
 
 ## Giao diện theo ảnh tham khảo
 
@@ -31,11 +32,11 @@ Nền tối có độ trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Ph�
 - Menu có bắt đầu ẩn và mở bằng phím đã chọn không?
 - Menu có nằm giữa cửa sổ game không?
 - Đổi phím, thoát hẳn, mở lại: phím có được giữ không?
-- Dòng trạng thái có hiện **Game window found (read only)** không? Nếu chưa, gửi đúng dòng trạng thái; chưa cần gửi đường dẫn hoặc file game.
+- Dòng trạng thái có hiện **Game window found** không? Nếu chưa, gửi đúng dòng trạng thái; chưa cần gửi đường dẫn hoặc file game.
 
 Bộ dò chỉ đọc lớp cửa sổ, tên tiến trình và thông tin cửa sổ. Nó đòi hỏi `UnrealWindow` và executable `Client-Win64-Shipping.exe`. Khi đã chọn EXE, đường dẫn tiến trình phải khớp đường dẫn đã lưu; khi chưa chọn, nó dùng thêm tên cửa sổ/thư mục phù hợp Wuthering Waves. Nhiều cửa sổ khớp hoặc không xác minh được executable sẽ không tự chọn. Không yêu cầu quyền quản trị để vượt lỗi nhận diện. Nếu di chuyển hoặc cập nhật game sang vị trí khác, dùng Chọn EXE để chọn lại. Nếu sau hai phút chưa thấy cửa sổ, tool hiện thông báo để bạn kiểm tra game; không tự mở lại liên tục.
 
-Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không tạo log/ảnh màn hình. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
+Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không chụp màn hình. Nó tạo riêng gói thử khi bạn bật lựa chọn và bấm Mở game; lưu hồ sơ hash và kết quả chuẩn bị cục bộ. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
 
 ## Kiểm chứng
 
