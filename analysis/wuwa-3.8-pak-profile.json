@@ -1,0 +1,34 @@
+{
+  "schema_version": 1,
+  "inspection_date": "2026-11-26",
+  "source_report_sha256": "585819836884f536b3374ea725a38c6dd73012f7de663943367178af46fa5d96",
+  "collected_scope": "Final 4096 bytes of each PAK; no full PAK or script content received.",
+  "input_sample_bytes_verified": 180224,
+  "pak_count": 44,
+  "compatible_footer_version": 12,
+  "index_encryption_flags": {
+    "set": 43,
+    "clear": 1
+  },
+  "selected_candidate": {
+    "filename": "pakchunk43-WindowsNoEditor.pak",
+    "file_bytes": 690064639,
+    "footer_sha256": "8f2eb4a52b1f68b87c7b28cfb5925ecd856c1a020e6d02f4945bdd9d6d806e3f",
+    "index_offset": 672682329,
+    "index_bytes": 4554724,
+    "index_sha1": "06470b0e276620de21e908e6f8198cd0fc7def40",
+    "encrypted_index_flag": 0,
+    "metadata_region_start": 672682329,
+    "metadata_region_end": 690064418,
+    "metadata_region_bytes": 17382089,
+    "contains_gameplay_scripts_verified": false
+  },
+  "interpretation_limits": [
+    "A clear index-encryption flag does not establish that every file entry or data block is unencrypted.",
+    "A footer and index location do not identify the JavaScript package by themselves.",
+    "The remaining metadata region may contain secondary indexes; its structure has not been inspected.",
+    "God Mode, No Cooldown and Damage Multiplier remain unimplemented and unverified."
+  ],
+  "next_input": "Read only the selected index region; verify its primary SHA1 against the footer before parsing directory/file names.",
+  "original_pak_bytes_in_repository": false
+}
