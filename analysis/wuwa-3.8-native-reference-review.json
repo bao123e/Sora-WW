@@ -1,0 +1,299 @@
+{
+  "method": "Static exact null-terminated identifiers and absolute image-pointer occurrences; no process opened or game binary executed. References are candidates, not validated call sites.",
+  "identifiers": [
+    {
+      "identifier": "KuroPuerts",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 1
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        }
+      ]
+    },
+    {
+      "identifier": "KuroPuertsWrapper",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        }
+      ]
+    },
+    {
+      "identifier": "KuroAnimJsSubsystem",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        }
+      ]
+    },
+    {
+      "identifier": "GetCooldownTimeRemaining",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 3
+        }
+      ]
+    },
+    {
+      "identifier": "K2_CheckAbilityCooldown",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 3
+        }
+      ]
+    },
+    {
+      "identifier": "K2_CommitAbilityCooldown",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 3
+        },
+        {
+          "encoding": "utf-16le",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 0
+        }
+      ]
+    },
+    {
+      "identifier": "ToggleIgnoreAbilitySystemCooldowns",
+      "literal_hits": [
+        {
+          "encoding": "ascii",
+          "in_executable_section": false,
+          "absolute_pointer_reference_count": 3
+        }
+      ]
+    },
+    {
+      "identifier": "CharacterDamageComponent",
+      "literal_hits": []
+    },
+    {
+      "identifier": "CharacterSkillCdComponent",
+      "literal_hits": []
+    },
+    {
+      "identifier": "DamageMultiplier",
+      "literal_hits": []
+    },
+    {
+      "identifier": "GodMode",
+      "literal_hits": []
+    }
+  ],
+  "exception_directory": {
+    "rva": 172412928,
+    "size": 5830572,
+    "parsed_entries": 485881
+  },
+  "validated_gameplay_functions": 0,
+  "limitation": "Generic engine cooldown identifiers do not establish player-skill behavior. High-entropy executable sections and loader-shaped imports prevent treating on-disk contents as verified runtime code.",
+  "pointer_table_review": [
+    {
+      "identifier": "GetCooldownTimeRemaining",
+      "references": [
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -16,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "K2_CheckAbilityCooldown",
+      "references": [
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -16,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "K2_CommitAbilityCooldown",
+      "references": [
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -16,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": true
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "ToggleIgnoreAbilitySystemCooldowns",
+      "references": [
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": true
+            },
+            {
+              "relative_table_offset": 8,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        },
+        {
+          "nearby_code_pointer_candidates": [
+            {
+              "relative_table_offset": -16,
+              "points_to_executable_section": true,
+              "first_byte_is_breakpoint_or_zero": false
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "conclusion": "Engine-name tables contain candidate code pointers, but these have not been validated as decoded functions or as WuWa player gameplay entry points. No patch addresses can be justified from this inspection."
+}
