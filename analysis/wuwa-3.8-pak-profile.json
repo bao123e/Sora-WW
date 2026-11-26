@@ -2,7 +2,7 @@
   "schema_version": 1,
   "inspection_date": "2026-11-26",
   "source_report_sha256": "585819836884f536b3374ea725a38c6dd73012f7de663943367178af46fa5d96",
-  "collected_scope": "Final 4096 bytes of each PAK; no full PAK or script content received.",
+  "collected_scope": "PAK footer samples and the verified pak43 metadata region; no file payloads extracted.",
   "input_sample_bytes_verified": 180224,
   "pak_count": 44,
   "compatible_footer_version": 12,
@@ -21,14 +21,43 @@
     "metadata_region_start": 672682329,
     "metadata_region_end": 690064418,
     "metadata_region_bytes": 17382089,
-    "contains_gameplay_scripts_verified": false
+    "contains_gameplay_scripts_verified": false,
+    "directory_inspection": {
+      "mount_point": "../../../Client/Content/Aki/Config/UniverseEditorConfig/",
+      "entry_count": 350351,
+      "path_hash_seed": 4172003406,
+      "secondary_indexes": [
+        {
+          "kind": "path_hash",
+          "offset": 677237053,
+          "bytes": 4204220,
+          "sha1": "fdfe40a7430be33387c5c062d65027fcd96f9cd8",
+          "verified": true
+        },
+        {
+          "kind": "full_directory",
+          "offset": 681441273,
+          "bytes": 8623145,
+          "sha1": "de4d0ea87df3ddddfb6c76af62390bed03a5aa32",
+          "verified": true
+        }
+      ],
+      "directory_count": 925,
+      "extensions": {
+        ".bytes": 350351
+      },
+      "all_directory_bytes_consumed": true,
+      "javascript_filename_count": 0,
+      "classification": "UniverseEditorConfig binary configuration entries; not a JavaScript package"
+    },
+    "metadata_region_sha256": "e5b745599bcc69dcd01a7e37be041cf6cd9793b1cd43ac09a5bf414a0f9bd121"
   },
   "interpretation_limits": [
     "A clear index-encryption flag does not establish that every file entry or data block is unencrypted.",
-    "A footer and index location do not identify the JavaScript package by themselves.",
-    "The remaining metadata region may contain secondary indexes; its structure has not been inspected.",
+    "Directory names establish package layout, not the semantics of uninspected .bytes payloads.",
+    "No JavaScript filenames were present in the complete pak43 directory index.",
     "God Mode, No Cooldown and Damage Multiplier remain unimplemented and unverified."
   ],
-  "next_input": "Read only the selected index region; verify its primary SHA1 against the footer before parsing directory/file names.",
+  "next_input": "Inspect names in Client/Content/SD before requesting further game data; do not request another arbitrary PAK.",
   "original_pak_bytes_in_repository": false
 }
