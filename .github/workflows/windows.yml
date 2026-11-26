@@ -21,12 +21,19 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: '3.12'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '8.0.x'
       - name: Install file preparer build dependencies
         run: python -m pip install -r tools/gameplay-prototype/requirements.txt pyinstaller==6.16.0
       - name: Build Windows x64 and check PE imports
         run: python scripts/build.py --zig zig
       - name: Build and verify frozen file preparer
         run: python scripts/build_backend.py
+      - name: Build live runtime and verify real detours
+        run: python scripts/build_runtime.py --zig zig
+      - name: Verify native bridge in our Windows fixture
+        run: python scripts/verify_runtime_windows.py --zig zig
       - name: Verify native UI, shortcuts and the actual EXE lifecycle
         run: python scripts/verify_windows.py --zig zig
       - name: Package verified binary and source
@@ -52,7 +59,7 @@ jobs:
             dist/windows-verification.json
             dist/ui-preview-*.png
       - name: Publish foundation preview
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/gameplay-trial'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/gameplay-trial' || github.ref == 'refs/heads/feature/live-no-cooldown'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -66,10 +73,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Bản khôi phục sau báo cáo game đóng khi dùng gói thử 0.4. Hai lựa chọn cũ bị tạm dừng và không được bật lại từ cấu hình đã lưu. Nút Khôi phục / Mở game gỡ gói thử có hash khớp hồ sơ tool rồi mới mở EXE gốc với -krqlv=sd. Không tạo gói mới, không sửa PAK/SIG/EXE gốc.
+          No Cooldown alpha dùng backend trong phiên game thay cho bản vá file 0.4. Vào game bình thường rồi bấm Bật trong game; chỉ báo gắn hook khi backend xác nhận. Có nút Tắt, tự vô hiệu hóa khi mất controller, kiểm tra đúng assembly/IL và lọc nhân vật thuộc người chơi. Không sửa DLL/PAK/SIG/EXE gốc. Chặn sát thương và Damage Multiplier chưa triển khai.
 
-          Đóng game, Thoát hẳn bản tool 0.4, giải nén toàn bộ ZIP mới (giữ cả hai EXE), mở menu và bấm Khôi phục / Mở game. Nếu không chứng minh được gói là của tool hoặc file đã thay đổi, tool giữ nguyên và báo lỗi thay vì tự xóa.
+          Giải nén toàn bộ ZIP, giữ ba EXE và ba DLL cạnh nhau. Thoát tool cũ trước khi mở bản mới. Giữ phím tùy chỉnh và đường dẫn đã lưu. Nếu còn gói 0.4, dùng Khôi phục / Mở game trước.
 
-          Windows CI kiểm tra đặt lại cấu hình cũ, nút tạm dừng, chặn chuẩn bị gói mới, luồng menu → backend gỡ gói → mở EXE mô phỏng, cùng các kiểm tra phím/đường dẫn/giao diện. Chưa có xác nhận khôi phục trên máy người dùng; nguyên nhân cụ thể của lần văng và backend gameplay thời gian thực vẫn chưa xác minh.
+          Đã kiểm thử detour thật trên hàm mô phỏng và native loader/pipe trên EXE mô phỏng Windows. Chưa xác minh Mono nhúng hay hiệu lực gameplay thật; lỗi quyền hoặc runtime không được hỗ trợ giữ chức năng tắt, không có bypass. Bộ đếm hook không chứng minh cooldown thực tế đã thay đổi.
           NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Recovery from 0.4 trial" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Live No Cooldown alpha" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false

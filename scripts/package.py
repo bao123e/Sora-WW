@@ -8,6 +8,10 @@ backend=DIST/'Sora-Gameplay.exe';backend_metadata=json.loads((DIST/'backend-buil
 assert backend_metadata['windows_self_tested'] and not backend_metadata['game_runtime_tested']
 assert hashlib.sha256(backend.read_bytes()).hexdigest()==backend_metadata['sha256']
 metadata['trial_backend']=backend_metadata
+live_metadata=json.loads((DIST/'live-build.json').read_text())
+assert live_metadata['windows_bridge_fixture_tested'] and not live_metadata['game_runtime_tested']
+for name,digest in live_metadata['files'].items():assert hashlib.sha256((DIST/name).read_bytes()).hexdigest()==digest
+metadata['live_runtime']=live_metadata
 verification=DIST/'windows-verification.json'
 if os.name=='nt':
     assert verification.exists(),'Run scripts/verify_windows.py before publishing Windows builds'
@@ -22,12 +26,13 @@ with ZipFile(customer,'w',ZIP_DEFLATED,compresslevel=9) as z:
     z.write(binary,'WuWa-PC.exe');z.write(backend,'Sora-Gameplay.exe');z.write(DIST/'THIRD_PARTY_NOTICES.txt','THIRD_PARTY_NOTICES.txt');z.write(DIST/'build.json','build.json')
     for name in ['Start-WuWa-PC.cmd','Check-Windows.cmd','LICENSE']:z.write(ROOT/name,name)
     z.write(ROOT/'README.vi.md','README.vi.txt')
+    for name in [*live_metadata['files'],'Harmony-LICENSE.txt']:z.write(DIST/name,name)
     z.writestr('SHA256SUMS.txt',metadata['sha256']+'  WuWa-PC.exe\n'+backend_metadata['sha256']+'  Sora-Gameplay.exe\n')
 source=DIST/('WuWa-PC-'+metadata['version']+'-source.zip')
 with ZipFile(source,'w',ZIP_DEFLATED,compresslevel=9) as z:
-    for directory in ['src','scripts','tests','.github','tools/gameplay-prototype']:
+    for directory in ['src','scripts','tests','.github','tools/gameplay-prototype','runtime']:
         for path in sorted((ROOT/directory).rglob('*')):
-            if path.is_file() and '__pycache__' not in path.parts:z.write(path,str(path.relative_to(ROOT)))
+            if path.is_file() and not {'__pycache__','bin','obj'}.intersection(path.parts):z.write(path,str(path.relative_to(ROOT)))
     for name in ['README.md','README.vi.md','LICENSE','Start-WuWa-PC.cmd','Check-Windows.cmd','.gitignore','.gitattributes']:z.write(ROOT/name,name)
 for archive in [customer,source]:
     with ZipFile(archive) as z:assert z.testzip() is None
@@ -36,5 +41,6 @@ for archive in [customer,source]:
 with ZipFile(customer) as z:
     assert hashlib.sha256(z.read('WuWa-PC.exe')).hexdigest()==json.loads(z.read('build.json'))['sha256']
     assert not json.loads(z.read('build.json'))['gameplay_implemented']
-    assert not any(name.endswith(('.pem','.dll','.env')) for name in z.namelist())
+    assert not any(name.endswith(('.pem','.env')) for name in z.namelist())
+    assert {name for name in z.namelist() if name.endswith('.dll')}=={'Sora.Runtime.Native.dll','Sora.Runtime.dll','0Harmony.dll'}
 print('PASS packaged executable hash, source identity, metadata and complete ZIP contents')

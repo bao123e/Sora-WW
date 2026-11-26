@@ -1,13 +1,11 @@
-# Sora-WW — bản khôi phục 0.4.1
+# Sora WW — live No Cooldown alpha
 
-[Tải bản Windows khôi phục](https://github.com/bao123e/Sora-WW/releases/download/v0.4.1-recovery/WuWa-PC-0.4.1-recovery-win64.zip) · [Hướng dẫn](README.vi.md)
+This branch replaces the withdrawn startup-file patch with a live-session controller. Only No Cooldown has a live implementation; God Mode and Damage Multiplier remain unavailable. Real-game effects and embedded Mono compatibility have not been verified.
 
-Chủ tool báo game đóng khi dùng gói thử 0.4. Bản vá đó đã tạm dừng; chưa xác định nguyên nhân gốc. Bản 0.4.1 đặt lại hai lựa chọn cũ, ngăn tạo lại gói và gỡ riêng gói có hash khớp hồ sơ của tool trước khi mở game.
+Open the game normally, start the tool, then press **Enable in session** beside No Cooldown. A supported session must acknowledge `HOOKS_READY` before the menu shows hooks as active. Press **Turn off** to restore original behavior. Selections are not saved across sessions. Failed attachment or an unsupported runtime keeps the feature off; there is no protection bypass or fallback file patch.
 
-Đóng game → Thoát tool cũ → giải nén toàn bộ ZIP mới (giữ cả hai EXE) → mở menu bằng phím đã lưu → **Khôi phục / Mở game**. PAK/SIG/EXE gốc không bị sửa. Gói không có hồ sơ hoặc đã thay đổi được giữ nguyên và báo lỗi.
+The implementation loads our own native bridge through ordinary Windows process rights, uses an already-loaded exported Mono embedding ABI, validates the exact Aki.Game module and original IL, and applies scoped Harmony prefixes. Losing the controller expires a three-second lease. Original PAK/SIG/EXE/DLL files are never changed. The previous owned-overlay removal remains available.
 
-Phím menu tùy chỉnh, ngôn ngữ, độ trong và đường dẫn EXE được giữ. Bật/tắt gameplay ngay trong phiên game chưa được triển khai; hai nút hiển thị Tạm dừng. Không coi trạng thái thấy cửa sổ game là gameplay đã hoạt động.
+[Vietnamese instructions](README.vi.md) · [Runtime mechanism and validation limits](runtime/README.md)
 
-CI kiểm tra luồng menu → backend gỡ gói → mở EXE mô phỏng, đặt lại cấu hình cũ và chặn chuẩn bị gói mới. Cần người dùng xác nhận game đã vào lại sau hoàn tác. Không có game binary, DLL/PAK đầu ra, tài khoản hay khóa trong repository.
-
-Build: `python scripts/build.py --zig /path/to/zig`. Đóng gói và kiểm tra Windows: xem `scripts/build_backend.py`, `scripts/verify_windows.py`, `scripts/package.py`. Source và bằng chứng kiểm tra được ghi trong từng bản phát hành.
+Build the menu with `python scripts/build.py --zig zig`, the rollback helper with `python scripts/build_backend.py`, and the live backend with `python scripts/build_runtime.py --zig zig`. Windows verification and packaging are in `scripts/verify_runtime_windows.py`, `scripts/verify_windows.py` and `scripts/package.py`. No game assembly or binary is distributed.
