@@ -1,6 +1,6 @@
 # WuWa PC — bước 1: menu và cửa sổ
 
-Bản 0.1.0-foundation chỉ kiểm tra khung chương trình Windows. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
+Bản 0.2.0-ui-preview chỉ kiểm tra khung chương trình Windows. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
@@ -14,10 +14,16 @@ Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 1. Giải nén toàn bộ gói vào một thư mục riêng. Chạy game bằng launcher như bình thường; để chế độ cửa sổ hoặc không viền để thử menu.
 2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần chọn file game hoặc gửi file game lớn.
 3. Menu mặc định ẩn. Nhấn **F1**, hoặc nhấp biểu tượng WuWa PC dưới khay hệ thống để mở.
-4. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Save**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Default** chỉ điền lại F1; cần Save để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
-5. X ở góc cửa sổ chỉ ẩn menu. **Exit** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
+4. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
+5. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
 
 Phím được lưu tại `%LOCALAPPDATA%\WuWaPC\settings.ini`, riêng cho sản phẩm này. Không dùng key, issuer hoặc cấu hình thanh toán của SoraVynx.
+
+## Giao diện theo ảnh tham khảo
+
+Nền tối có độ trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Phím tắt, nhóm có đường phân cách và thanh đổi phím/ngôn ngữ luôn ở cuối. Tab Tổng quan có nút chọn độ đậm menu (85/90/94/100%). Ghim giữ menu ở trên các cửa sổ khác. Chuyển tiếng Việt / English ở thanh cuối. Những tùy chọn này được lưu cùng cấu hình phím; phím đã chọn ở bản 0.1 vẫn dùng được.
+
+Đổi phím ở tab Phím tắt hoặc nút Đổi phím phía dưới. Cuộn con lăn hoặc kéo thanh cuộn khi nội dung dài. Ảnh tham khảo chỉ được dùng cho giao diện; không có tùy chọn Frame Generation, DLSS hay GPU giả lập.
 
 ## Cần kiểm tra ở lượt đầu
 

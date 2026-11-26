@@ -9,7 +9,7 @@ static DWORD WINAPI reserve_elsewhere(void *arg){
  if(r->reserved){WaitForSingleObject(r->release,10000);UnregisterHotKey(NULL,900);}return 0;
 }
 int main(void){
- instance=GetModuleHandleW(NULL);assert(self_test()==0);
+ ui_language=1;instance=GetModuleHandleW(NULL);assert(self_test()==0);
  INITCOMMONCONTROLSEX common={sizeof(common),ICC_HOTKEY_CLASS};assert(InitCommonControlsEx(&common));
  background=CreateSolidBrush(RGB(18,25,37));font=CreateFontW(-16,0,0,0,FW_NORMAL,0,0,0,DEFAULT_CHARSET,0,0,0,0,L"Segoe UI");
  WNDCLASSW panel={0};panel.hInstance=instance;panel.lpszClassName=L"WuWaNativeTestPanel";panel.lpfnWndProc=window_proc;assert(RegisterClassW(&panel));

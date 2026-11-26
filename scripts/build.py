@@ -2,7 +2,7 @@
 from pathlib import Path
 import argparse,subprocess,hashlib,json,struct
 ROOT=Path(__file__).resolve().parents[1]
-VERSION='0.1.0-foundation'
+VERSION='0.2.0-ui-preview'
 def inspect_pe(path):
     data=path.read_bytes();pe=struct.unpack_from('<I',data,0x3c)[0]
     assert data[:2]==b'MZ' and data[pe:pe+4]==b'PE\0\0'
@@ -41,7 +41,7 @@ def build(zig):
     command=[zig,'cc','-target','x86_64-windows-gnu','-std=c11','-O2','-g0','-Wall','-Wextra','-Werror','-Wno-unused-function','-municode','-Wl,--subsystem,windows',str(ROOT/'src/main.c'),str(out/'app.res'),'-luser32','-lgdi32','-lshell32','-lcomctl32','-o',str(out/'WuWa-PC.exe')]
     subprocess.run(command,check=True)
     image=out/'WuWa-PC.exe';result=inspect_pe(image)
-    metadata={'version':VERSION,'stage':'menu-window-only','gameplay_implemented':False,'windows_runtime_tested':False,'game_runtime_tested':False,'observed_game_version':'OS_Windows_Product_3.8.0_9244589_3.8.13_9534983 * SD','observation_source':'owner-provided title-screen screenshot 2026-11-26; not an executable compatibility check','source_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ['src/main.c','src/core.h','src/app.manifest']},'sha256':hashlib.sha256(image.read_bytes()).hexdigest(),'pe':result}
+    metadata={'version':VERSION,'stage':'menu-window-ui-preview','ui_reference':'owner-provided MFG Unlocker screenshot; styling only','ui_languages':['vi','en'],'gameplay_implemented':False,'windows_runtime_tested':False,'game_runtime_tested':False,'observed_game_version':'OS_Windows_Product_3.8.0_9244589_3.8.13_9534983 * SD','observation_source':'owner-provided title-screen screenshot 2026-11-26; not an executable compatibility check','source_sha256':{name:hashlib.sha256((ROOT/name).read_bytes()).hexdigest() for name in ['src/main.c','src/core.h','src/ui.h','src/app.manifest']},'sha256':hashlib.sha256(image.read_bytes()).hexdigest(),'pe':result}
     (out/'build.json').write_text(json.dumps(metadata,indent=2)+'\n')
     print('PASS Windows x64 GUI build and PE imports; live Windows/game UI still unverified')
 if __name__=='__main__':
