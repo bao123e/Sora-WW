@@ -58,6 +58,20 @@
     "No JavaScript filenames were present in the complete pak43 directory index.",
     "God Mode, No Cooldown and Damage Multiplier remain unimplemented and unverified."
   ],
-  "next_input": "Inspect names in Client/Content/SD before requesting further game data; do not request another arbitrary PAK.",
-  "original_pak_bytes_in_repository": false
+  "next_input": null,
+  "original_pak_bytes_in_repository": false,
+  "sd_inspection": {
+    "source_report_sha256": "f587a54585dc46020789de2e1a39e726b06121f29aeef8e0163bcb204000ad87",
+    "file_count": 39,
+    "footer_samples_verified": 39,
+    "sample_bytes_verified": 159744,
+    "compatible_footer_version": 12,
+    "index_encryption_flags": {
+      "set": 39,
+      "clear": 0
+    },
+    "directory_names_read": false,
+    "interpretation": "All inspected SD package footers mark their indexes encrypted; footer-only inspection cannot locate gameplay scripts."
+  },
+  "current_blocker": "Available package metadata does not expose a gameplay script directory. No unencrypted gameplay source or validated runtime interface has been identified; additional arbitrary full PAK uploads are not justified."
 }
