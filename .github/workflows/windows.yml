@@ -7,7 +7,7 @@ permissions:
   contents: read
 jobs:
   windows:
-    if: github.ref != 'refs/heads/analysis/pak-headers'
+    if: github.ref != 'refs/heads/analysis/pak-headers' && github.ref != 'refs/heads/analysis/pak-index'
     runs-on: windows-latest
     timeout-minutes: 12
     permissions:
@@ -100,3 +100,35 @@ jobs:
         env:
           GH_TOKEN: ${{ github.token }}
         run: gh release upload v0.2.0-ui-preview "$RUNNER_TEMP/Sora-WW-Pak-Headers-v1.zip" "$RUNNER_TEMP/Sora-WW-Pak-Headers-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
+  pak_index:
+    if: github.ref == 'refs/heads/analysis/pak-index'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test bounded index reader with synthetic PAK and mismatched hashes
+        shell: powershell
+        run: ./tools/pak-index/Collect-Pak43-Index.ps1 -SelfTest
+      - name: Package standalone read-only index reader
+        shell: python
+        run: |
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          import os,hashlib
+          root=Path('tools/pak-index');out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Pak43-Reader-v1.zip'
+          script=(root/'Collect-Pak43-Index.ps1').read_text()
+          for forbidden in ['SendInput','ReadProcessMemory','WriteProcessMemory','VirtualAllocEx','CreateRemoteThread','Invoke-WebRequest']:
+            assert forbidden not in script
+          with ZipFile(out,'w',ZIP_DEFLATED) as z:
+            for name in ['Collect-Pak43-Index.ps1','Inspect-Pak43.cmd','README.vi.txt']:z.write(root/name,name)
+          with ZipFile(out) as z:assert z.testzip() is None and len(z.namelist())==3
+          Path(str(out)+'.sha256').write_text(hashlib.sha256(out.read_bytes()).hexdigest()+'  '+out.name+'\n')
+      - name: Publish tested index helper alongside the current UI release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload v0.2.0-ui-preview "$RUNNER_TEMP/Sora-WW-Pak43-Reader-v1.zip" "$RUNNER_TEMP/Sora-WW-Pak43-Reader-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
