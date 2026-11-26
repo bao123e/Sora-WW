@@ -1,0 +1,56 @@
+name: Build and verify Windows foundation
+on:
+  workflow_dispatch:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  windows:
+    runs-on: windows-latest
+    timeout-minutes: 12
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: '0.14.1'
+      - name: Build Windows x64 and check PE imports
+        run: python scripts/build.py --zig zig
+      - name: Verify native UI, shortcuts and the actual EXE lifecycle
+        run: python scripts/verify_windows.py --zig zig
+      - name: Package verified binary and source
+        run: python scripts/package.py
+      - name: Upload tested packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: WuWa-PC-verified-packages
+          path: |
+            dist/*.zip
+            dist/*.sha256
+            dist/windows-verification.json
+      - name: Publish foundation preview
+        if: github.ref == 'refs/heads/main'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          version="$(python -c "import json;print(json.load(open('dist/build.json'))['version'])")"
+          tag="v$version"
+          if gh release view "$tag" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            target="$(gh release view "$tag" --repo "$GITHUB_REPOSITORY" --json targetCommitish --jq .targetCommitish)"
+            if [ "$target" = "$GITHUB_SHA" ]; then exit 0; fi
+            echo 'This version already exists for another commit. Bump the version before publishing.'
+            exit 1
+          fi
+          cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
+          Bước 1: menu ẩn/căn giữa, phím mở menu tùy chỉnh được lưu lại và nhận diện cửa sổ Wuthering Waves ở chế độ chỉ đọc. Chưa có chức năng gameplay.
+
+          Tải ZIP win64, giải nén TOÀN BỘ, chạy Start-WuWa-PC.cmd rồi nhấn F1 mở menu. Đổi phím bằng ô phím và Save; X chỉ ẩn, Exit thoát. Game nên ở chế độ cửa sổ/không viền để kiểm tra menu.
+
+          Windows CI đã kiểm tra EXE thật: startup ẩn, mở/ẩn/thoát, control/phím và lưu/nạp lại cấu hình; cửa sổ giả lập kiểm tra căn giữa và từ chối nhận nhầm executable. Không chạy game trong CI. build.json chứa hash và URL kiểm chứng. Cần chủ tool xác nhận menu/nhận diện với game thực tế. Không cần gửi file game lớn ở bước này.
+          NOTES
+          gh release create "$tag" dist/*.zip dist/*.sha256 --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "WuWa PC $version - Menu foundation" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false

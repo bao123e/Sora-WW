@@ -1,0 +1,4 @@
+dist/
+.zig-cache/
+__pycache__/
+*.exe
