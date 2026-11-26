@@ -14,9 +14,9 @@ function Assert-Source([byte[]]$Bytes,[string]$Name) {
 }
 function New-TestEntry([byte[]]$Image,[byte]$Flags=16) {
  $payload=[byte[]]::new($Image.Length+11);[Array]::Copy($Image,0,$payload,11,$Image.Length)
- $sha=[Security.Cryptography.SHA1]::Create();try{$digest=$sha.ComputeHash($payload)}finally{$sha.Dispose()}
+ $sha=[Security.Cryptography.SHA1]::Create();try{$digest=$sha.ComputeHash($Image)}finally{$sha.Dispose()}
  $stream=[IO.MemoryStream]::new();$writer=[IO.BinaryWriter]::new($stream)
- try{$writer.Write([long]0);$writer.Write([long]$payload.Length);$writer.Write([long]$payload.Length);$writer.Write([uint32]0);$writer.Write($digest);$writer.Write($Flags);$writer.Write([uint32]0);$writer.Write($payload);return ,$stream.ToArray()}finally{$writer.Dispose();$stream.Dispose()}
+ try{$writer.Write([long]0);$writer.Write([long]$Image.Length);$writer.Write([long]$Image.Length);$writer.Write([uint32]0);$writer.Write($digest);$writer.Write($Flags);$writer.Write([uint32]0);$writer.Write($payload);return ,$stream.ToArray()}finally{$writer.Dispose();$stream.Dispose()}
 }
 function Test-Reader {
  $root=Join-Path ([IO.Path]::GetTempPath()) ('sora-game-test-'+[Guid]::NewGuid().ToString('N'));[void][IO.Directory]::CreateDirectory($root)
@@ -57,7 +57,7 @@ try {
  $temp=Join-Path ([IO.Path]::GetTempPath()) ('sora-game-read-'+[Guid]::NewGuid().ToString('N'));[void][IO.Directory]::CreateDirectory($temp)
  $result=[GameplayReader]::Find($data,105426321,$temp)
  $export=Join-Path $temp 'export';[void][IO.Directory]::CreateDirectory($export);[IO.File]::WriteAllBytes((Join-Path $export 'Aki.Game.dll'),$result.Bytes)
- $report=[ordered]@{schema='SORA-WW-GAMEPLAY-ASSEMBLY-1';source_pak=$info.Name;source_bytes=$data.Length;source_sha256=(Get-Digest $data);entry_offset=$result.EntryOffset;entry_sha1_verified=$true;assembly_name=$result.Name;assembly_version=$result.Version;assembly_sha256=(Get-Digest $result.Bytes);assembly_bytes=$result.Bytes.Length;prefix_bytes_removed=11;source_modified=$false;assembly_executed=$false;scope='Plaintext uncompressed entry only. Index encryption was not decrypted.'}
+ $report=[ordered]@{schema='SORA-WW-GAMEPLAY-ASSEMBLY-2';source_pak=$info.Name;source_bytes=$data.Length;source_sha256=(Get-Digest $data);entry_offset=$result.EntryOffset;entry_sha1_verified=$true;assembly_name=$result.Name;assembly_version=$result.Version;assembly_sha256=(Get-Digest $result.Bytes);assembly_bytes=$result.Bytes.Length;alignment_padding_bytes=11;sha1_region='PE bytes, excluding alignment padding';source_modified=$false;assembly_executed=$false;scope='Plaintext uncompressed entry only. Index encryption was not decrypted.'}
  $json=$report|ConvertTo-Json -Depth 4;[IO.File]::WriteAllText((Join-Path $export 'assembly-info.json'),$json,[Text.UTF8Encoding]::new($false))
  $desktop=[Environment]::GetFolderPath('Desktop');if(!$desktop){throw 'Desktop folder unavailable.'}
  $name='Sora-WW-AkiGame-'+[Guid]::NewGuid().ToString('N').Substring(0,8)+'.zip';$zip=Join-Path $desktop $name

@@ -22,7 +22,7 @@ jobs:
           from pathlib import Path
           from zipfile import ZipFile,ZIP_DEFLATED
           import os,hashlib
-          root=Path('tools/gameplay-reader');out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Gameplay-Reader-v1.zip'
+          root=Path('tools/gameplay-reader');out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Gameplay-Reader-v2.zip'
           script=(root/'GameplayReader.cs').read_text()
           assert 'AssemblyName.GetAssemblyName' in script and 'sha.ComputeHash' in script
           for forbidden in ['ReadProcessMemory','WriteProcessMemory','CreateRemoteThread','Assembly.Load','Invoke-WebRequest']:
@@ -35,4 +35,4 @@ jobs:
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release upload v0.3.1-launcher-preview "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v1.zip" "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
+        run: gh release upload v0.3.1-launcher-preview "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v2.zip" "$RUNNER_TEMP/Sora-WW-Gameplay-Reader-v2.zip.sha256" --repo "$GITHUB_REPOSITORY"

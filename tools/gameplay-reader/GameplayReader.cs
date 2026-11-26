@@ -40,7 +40,8 @@ public static class GameplayReader
         for (int mz = 64; mz < dataEnd - 256; mz++)
         {
             if (pak[mz] != 77 || pak[mz + 1] != 90) continue;
-            // Observed entry layout: 53-byte header, 11 zero bytes, then an ordinary PE.
+            // Actual owner PAK: 53-byte header, 11 alignment bytes, then PE.
+            // Header size and SHA1 cover the PE only, excluding alignment bytes.
             int header = mz - 64;
             bool prefix = true;
             for (int j = mz - 11; j < mz; j++) if (pak[j] != 0) { prefix = false; break; }
@@ -49,12 +50,12 @@ public static class GameplayReader
             long unpacked = BitConverter.ToInt64(pak, header + 16);
             uint compression = BitConverter.ToUInt32(pak, header + 24);
             byte flags = pak[header + 48];
-            if (size < 267 || size != unpacked || compression != 0 || (flags & 1) != 0) continue;
-            if (size > dataEnd - (header + 53)) continue;
+            if (size < 256 || size != unpacked || compression != 0 || (flags & 1) != 0) continue;
+            if (size > dataEnd - mz) continue;
             byte[] digest;
-            using (SHA1 sha = SHA1.Create()) digest = sha.ComputeHash(pak, header + 53, (int)size);
+            using (SHA1 sha = SHA1.Create()) digest = sha.ComputeHash(pak, mz, (int)size);
             if (!Equal(pak, header + 28, digest)) continue;
-            byte[] image = new byte[(int)size - 11];
+            byte[] image = new byte[(int)size];
             Buffer.BlockCopy(pak, mz, image, 0, image.Length);
             if (!IsManagedPe(image)) continue;
             string candidate = Path.Combine(temporaryDirectory, Guid.NewGuid().ToString("N") + ".dll");
