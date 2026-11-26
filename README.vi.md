@@ -1,6 +1,6 @@
 # WuWa PC — menu và mở game
 
-Bản 0.3.0-launcher-preview thêm chọn/lưu EXE và mở game từ menu. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
+Bản 0.3.1-launcher-preview thêm chọn/lưu EXE và mở game từ menu. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
@@ -14,7 +14,7 @@ Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 1. Giải nén toàn bộ gói vào một thư mục riêng. Để game ở chế độ cửa sổ hoặc không viền để dùng menu.
 2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần gửi file game lớn.
 3. Menu mặc định ẩn. Nhấn **F1**, hoặc nhấp biểu tượng WuWa PC dưới khay hệ thống để mở.
-4. Trong Tổng quan, chọn **Chọn EXE…**, tới `Client\Binaries\Win64\Client-Win64-Shipping.exe` của bản cài đặt. Đường dẫn được lưu riêng cùng cấu hình, hỗ trợ thư mục có dấu. Bấm **Mở game** để mở EXE đã chọn. Nếu game yêu cầu launcher chính thức, dùng launcher đó; tool vẫn nhận diện cửa sổ của EXE đã chọn. Menu chỉ tự ẩn sau khi thấy cửa sổ game, không dựa vào thời gian tải cố định. Bấm mở nhiều lần sẽ không mở thêm phiên khi tiến trình game đang chạy.
+4. Trong Tổng quan, chọn **Chọn EXE…**, tới `Client\Binaries\Win64\Client-Win64-Shipping.exe` của bản cài đặt. Đường dẫn được lưu riêng cùng cấu hình, hỗ trợ thư mục có dấu. Bấm **Mở game** để mở EXE đã chọn với tham số `-krqlv=sd` do chủ tool cung cấp cho bản SD. Không cần thêm tham số vào tên file hoặc tạo shortcut. Nếu game yêu cầu launcher chính thức, dùng launcher đó; tool vẫn nhận diện cửa sổ của EXE đã chọn. Menu chỉ tự ẩn sau khi thấy cửa sổ game, không dựa vào thời gian tải cố định. Bấm mở nhiều lần sẽ không mở thêm phiên khi tiến trình game đang chạy.
 5. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
 6. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
 

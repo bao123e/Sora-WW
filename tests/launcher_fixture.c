@@ -13,7 +13,8 @@ static LRESULT CALLBACK fixture_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
  return DefWindowProcW(hwnd,msg,wp,lp);
 }
 int WINAPI wWinMain(HINSTANCE instance,HINSTANCE previous,PWSTR command,int show){
- (void)previous;(void)command;(void)show;
+ (void)previous;(void)show;
+ if(wcscmp(command,L"-krqlv=sd"))return 6;
  wchar_t exe[32768],folder[32768];if(!GetModuleFileNameW(NULL,exe,32768)||!GetCurrentDirectoryW(32768,folder))return 3;
  wchar_t *slash=wcsrchr(exe,L'\\');if(!slash)return 4;*slash=0;if(_wcsicmp(exe,folder))return 5;
  Sleep(750);

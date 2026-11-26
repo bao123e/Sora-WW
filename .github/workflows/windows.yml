@@ -59,10 +59,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Thêm Chọn EXE / Mở game trong Tổng quan. Lưu đường dẫn có dấu, khớp đường dẫn tiến trình đã chọn, chờ cửa sổ game để ẩn menu và ngăn mở trùng kể cả lúc cửa sổ chưa tải xong. Phím menu tùy chỉnh và thiết lập giao diện được giữ lại. Ba chức năng gameplay chưa được triển khai.
+          Sửa lệnh Mở game để truyền tham số -krqlv=sd do chủ tool cung cấp cho bản SD. EXE và tham số được truyền riêng qua Windows ShellExecuteEx; không cần sửa tên file hay tạo shortcut. Giữ đường dẫn, phím menu và thiết lập đã lưu.
 
-          Thoát bản cũ bằng Thoát, giải nén toàn bộ ZIP win64, chạy Start-WuWa-PC.cmd và mở menu bằng phím đã lưu (mặc định F1). Chọn Client/Binaries/Win64/Client-Win64-Shipping.exe rồi bấm Mở game. Nếu game cần launcher chính thức, mở bằng launcher đó; tool vẫn nhận diện cửa sổ theo đường dẫn đã lưu.
+          Thoát bản cũ bằng Thoát, giải nén toàn bộ ZIP win64, chạy Start-WuWa-PC.cmd và mở menu bằng phím đã lưu. Bấm Mở game trong Tổng quan. Nếu chưa chọn đường dẫn, chọn Client/Binaries/Win64/Client-Win64-Shipping.exe.
 
-          Windows CI kiểm tra lưu/đọc đường dẫn Unicode, cấu hình lỗi, khởi chạy EXE mô phỏng, chờ cửa sổ, không mở lặp, tự ẩn và timeout; không chạy game thật. Chức năng mở game cần xác nhận trên bản cài đặt của người dùng.
+          Windows CI khởi chạy EXE mô phỏng chỉ tạo cửa sổ khi nhận đúng -krqlv=sd và đúng thư mục làm việc; đồng thời kiểm tra đường dẫn Unicode, chống mở trùng, chờ cửa sổ và tự ẩn menu. Chưa xác nhận việc vào WuWa thật; ba chức năng gameplay vẫn chưa triển khai.
           NOTES
           gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Game launcher preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false

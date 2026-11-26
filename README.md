@@ -2,11 +2,11 @@
 
 Khung tool Windows dành cho Wuthering Waves, phát triển từng bước và xác minh riêng từng phần.
 
-**[Tải bản khung Windows](https://github.com/bao123e/Sora-WW/releases/download/v0.3.0-launcher-preview/WuWa-PC-0.3.0-launcher-preview-win64.zip)** · [Releases](https://github.com/bao123e/Sora-WW/releases) · [Hướng dẫn đầy đủ](README.vi.md)
+**[Tải bản khung Windows](https://github.com/bao123e/Sora-WW/releases/download/v0.3.1-launcher-preview/WuWa-PC-0.3.1-launcher-preview-win64.zip)** · [Releases](https://github.com/bao123e/Sora-WW/releases) · [Hướng dẫn đầy đủ](README.vi.md)
 
 Giao diện dùng nền tối trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Phím tắt và thanh đổi phím/ngôn ngữ ở cuối theo ảnh tham khảo của chủ tool. Có Ghim, cuộn nội dung, độ đậm menu và tiếng Việt/English được lưu lại.
 
-Bản 0.3 thêm chọn/lưu EXE và mở game từ menu, ngăn mở trùng khi game đang tải, tự ẩn sau khi nhận diện cửa sổ theo đường dẫn đã chọn. Có menu mặc định ẩn, căn giữa cửa sổ game, phím mở menu tùy chỉnh và lưu lại, biểu tượng khay hệ thống, nhận diện cửa sổ/tiến trình ở chế độ chỉ đọc. **Chưa có chức năng gameplay.**
+Bản 0.3.1 truyền tham số `-krqlv=sd` khi mở EXE của bản SD. Có chọn/lưu EXE và mở game từ menu, ngăn mở trùng khi game đang tải, tự ẩn sau khi nhận diện cửa sổ theo đường dẫn đã chọn. Có menu mặc định ẩn, căn giữa cửa sổ game, phím mở menu tùy chỉnh và lưu lại, biểu tượng khay hệ thống, nhận diện cửa sổ/tiến trình ở chế độ chỉ đọc. **Chưa có chức năng gameplay.**
 
 Giải nén toàn bộ ZIP → chạy `Start-WuWa-PC.cmd` → nhấn **F1** mở menu → **Chọn EXE…** → chọn `Client-Win64-Shipping.exe` → **Mở game**. Nếu game yêu cầu launcher chính thức, mở bằng launcher; tool vẫn dò theo đường dẫn đã lưu. Đổi phím bằng ô phím và **Lưu**. X chỉ ẩn; **Thoát** thoát hẳn. Game nên ở chế độ cửa sổ hoặc không viền để thử menu.
 

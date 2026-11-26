@@ -48,7 +48,7 @@ static void launch_game(void){
   if(state<0)wcscpy(launch_notice,ui_text(L"Không kiểm tra được tiến trình. Chưa mở thêm game.",L"Could not check processes. No additional game was launched."));
   else if(state>0){launch_pending=TRUE;launch_started=GetTickCount64();wcscpy(launch_notice,ui_text(L"Game đang chạy. Chờ cửa sổ game; không mở thêm phiên.",L"Game is already running. Waiting for its window."));}
   else {wchar_t folder[32768];wcscpy(folder,game_path);wchar_t *slash=wcsrchr(folder,L'\\');if(slash)*slash=0;
-   SHELLEXECUTEINFOW info={0};info.cbSize=sizeof(info);info.fMask=SEE_MASK_NOCLOSEPROCESS|SEE_MASK_FLAG_NO_UI;info.hwnd=app;info.lpVerb=L"open";info.lpFile=game_path;info.lpDirectory=folder;info.nShow=SW_SHOWNORMAL;
+   SHELLEXECUTEINFOW info={0};info.cbSize=sizeof(info);info.fMask=SEE_MASK_NOCLOSEPROCESS|SEE_MASK_FLAG_NO_UI;info.hwnd=app;info.lpVerb=L"open";info.lpFile=game_path;info.lpParameters=L"-krqlv=sd";info.lpDirectory=folder;info.nShow=SW_SHOWNORMAL;
    if(ShellExecuteExW(&info)){if(info.hProcess)CloseHandle(info.hProcess);launch_pending=TRUE;launch_started=GetTickCount64();wcscpy(launch_notice,ui_text(L"Đã gửi yêu cầu mở. Menu sẽ ẩn khi tìm thấy cửa sổ game.",L"Launch requested. The menu will hide when the game window appears."));}
    else {DWORD error=GetLastError();swprintf(launch_notice,256,ui_text(L"Không mở được game (Windows %lu).",L"Could not open the game (Windows %lu)."),(unsigned long)error);}
   }
