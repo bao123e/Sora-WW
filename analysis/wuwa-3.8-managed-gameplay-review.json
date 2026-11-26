@@ -1,0 +1,107 @@
+{
+  "inspection_date": "2026-11-26",
+  "local_binary_evidence": [
+    {
+      "file": "Client-Win64-Shipping.exe",
+      "sha256": "f648064a90fa818912ce037af9d5c3fd6b94973a415a64862ff52b3cd23e3761",
+      "ecma_metadata_magic_occurrences": 0,
+      "named_tokens": {
+        "Aki.Game.dll": {
+          "ascii": 1,
+          "utf-16le": 1
+        },
+        "CSharpEnvironment": {
+          "ascii": 4,
+          "utf-16le": 7
+        },
+        "mono_image_open_from_data": {
+          "ascii": 0,
+          "utf-16le": 1
+        },
+        "SharpGameAssemblyConfig": {
+          "ascii": 1,
+          "utf-16le": 1
+        }
+      }
+    },
+    {
+      "file": "Client-Win64-ShippingBase.dll",
+      "sha256": "9ceb2e6f4a2e8d579003374cef95071b3b1de0a64968166a0b457c5af0cfb63c",
+      "ecma_metadata_magic_occurrences": 0,
+      "named_tokens": {
+        "Aki.Game.dll": {
+          "ascii": 0,
+          "utf-16le": 0
+        },
+        "CSharpEnvironment": {
+          "ascii": 0,
+          "utf-16le": 0
+        },
+        "mono_image_open_from_data": {
+          "ascii": 0,
+          "utf-16le": 0
+        },
+        "SharpGameAssemblyConfig": {
+          "ascii": 0,
+          "utf-16le": 0
+        }
+      }
+    }
+  ],
+  "runtime_interpretation": "The supplied EXE contains C# environment, Sharphereal/Mono and Aki.Game.dll identifiers alongside Puerts. This establishes compiled integration surfaces, not which runtime is active in the owner session.",
+  "public_references": [
+    {
+      "repository": "SphinX2k6/wuwa_c-script",
+      "commit": "f3aec2cbd81b31b7d23f970ef2627a6d8842fdbc",
+      "paths": [
+        "Aki.Game/CharacterSkillCdComponent.cs",
+        "Aki.Game/CharacterDamageComponent.cs",
+        "Aki.Game/BaseDamageComponent.cs"
+      ],
+      "version_match_verified": false
+    },
+    {
+      "repository": "PQMlmaoxd/wuwa-re-prj",
+      "commit": "874186a140c36b0faece5846edfd67a23056a1d5",
+      "paths": [
+        "docs/RESEARCH_FINDINGS.md",
+        "src/managed/cs-e3fc67839851/skills/CharacterSkillCdComponent.cs"
+      ],
+      "declared_game_version": "UNKNOWN",
+      "assembly_sha256": "e3fc67839851d97f2f7cf749f49329bfbe44d059189383ef93ff24f7d22c02db",
+      "same_as_owner_assembly_verified": false
+    }
+  ],
+  "feature_findings": {
+    "no_cooldown": {
+      "source_surfaces": [
+        "CharacterSkillCdComponent.IsSkillInCd",
+        "CharacterSkillCdComponent.StartCd",
+        "CharacterSkillCdComponent.ModifyCdTime"
+      ],
+      "finding": "The referenced implementation distinguishes remaining charge count from cooldown state and groups skill IDs. A single generic Unreal cooldown check is insufficient evidence.",
+      "owner_build_verified": false
+    },
+    "god_mode": {
+      "source_surfaces": [
+        "BaseDamageComponent.ProcessDamage",
+        "CharacterDamageComponent.FallInjure"
+      ],
+      "finding": "The reference checks an invincibility gameplay tag in both normal damage and falling damage paths. Other HP update and server notification paths have not been validated.",
+      "owner_build_verified": false
+    },
+    "damage_multiplier": {
+      "source_surfaces": [
+        "BaseDamageComponent.ProcessDamage",
+        "BaseDamageComponent.GetServerDamage",
+        "BaseDamageComponent.GetServerDamageCallBack"
+      ],
+      "finding": "The reference sends a damage execution request and consumes a response. Multiplying a local return value is not established to multiply authoritative HP damage.",
+      "owner_build_verified": false
+    }
+  },
+  "next_needed_evidence": "Locate Aki.Game.dll in the owner installation and inspect its managed identity and relevant CIL if a loose file is available. The literal filename is present in the supplied EXE. No request for an arbitrary additional PAK is justified.",
+  "gameplay_implemented": false,
+  "game_runtime_tested": false,
+  "third_party_source_code_copied_into_repository": false
+}
