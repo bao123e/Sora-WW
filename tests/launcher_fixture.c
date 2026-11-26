@@ -1,6 +1,10 @@
 /* Synthetic launch target for CI; no real game, network or account data. */
+#ifndef UNICODE
 #define UNICODE
+#endif
+#ifndef _UNICODE
 #define _UNICODE
+#endif
 #include <windows.h>
 #include <wchar.h>
 static LRESULT CALLBACK fixture_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
