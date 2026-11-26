@@ -16,7 +16,7 @@ int main(void){
  app=CreateWindowExW(0,panel.lpszClassName,L"Synthetic panel",WS_OVERLAPPED|WS_CAPTION|WS_SYSMENU,0,0,700,440,NULL,NULL,instance,NULL);assert(app);assert(!IsWindowVisible(app));
  status_label=control(L"STATIC",L"",0,0,0,620,40,0);note_label=control(L"STATIC",L"",0,0,50,620,40,0);key_label=control(L"STATIC",L"",0,0,100,620,40,0);
  key_field=control(HOTKEY_CLASSW,L"",WS_TABSTOP,0,150,200,30,0);assert(key_field);SendMessageW(key_field,HKM_SETRULES,0,0);
- wchar_t temp[MAX_PATH];assert(GetTempPathW(MAX_PATH,temp));assert(GetTempFileNameW(temp,L"wwk",0,config_path));
+ wchar_t temp[MAX_PATH],private_state[MAX_PATH];assert(GetTempPathW(MAX_PATH,temp));assert(GetTempFileNameW(temp,L"wwk",0,private_state));assert(DeleteFileW(private_state));assert(CreateDirectoryW(private_state,NULL));swprintf(config_path,32768,L"%ls\\settings.ini",private_state);
  menu_key=(struct WKey){VK_F23,MOD_CONTROL|MOD_SHIFT};assert(write_binding(config_path,menu_key));key_registered=set_key_registration(menu_key);assert(key_registered);
  struct ReservedKey held={CreateEventW(NULL,TRUE,FALSE,NULL),CreateEventW(NULL,TRUE,FALSE,NULL),{VK_F24,MOD_CONTROL|MOD_ALT|MOD_SHIFT},FALSE};assert(held.ready&&held.release);
  HANDLE thread=CreateThread(NULL,0,reserve_elsewhere,&held,0,NULL);assert(thread);assert(WaitForSingleObject(held.ready,5000)==WAIT_OBJECT_0&&held.reserved);
@@ -50,6 +50,10 @@ int main(void){
  assert(game_process_state()==1);HWND launched=game;launch_game();assert(game==launched&&!IsWindowVisible(app));
  DWORD fixture_pid;GetWindowThreadProcessId(launched,&fixture_pid);HANDLE fixture_process=OpenProcess(SYNCHRONIZE,FALSE,fixture_pid);assert(fixture_process);assert(PostMessageW(launched,WM_CLOSE,0,0));assert(WaitForSingleObject(fixture_process,5000)==WAIT_OBJECT_0);CloseHandle(fixture_process);
  poll_game();assert(matches==0);launch_pending=TRUE;launch_started=GetTickCount64()-120001;poll_game();assert(!launch_pending&&launch_notice[0]);
- suspend_key();DeleteFileW(config_path);DestroyWindow(app);UnregisterClassW(panel.lpszClassName,instance);DeleteObject(font);DeleteObject(background);
+ trial_cd=trial_damage=TRUE;trial_toggle(UI_TRIAL_CD);assert(!trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",99,config_path)==0);
+ wchar_t manifest[32768];swprintf(manifest,32768,L"%ls\\gameplay-trial.json",private_state);FILE *marker=_wfopen(manifest,L"wb");assert(marker);fputs("{}",marker);fclose(marker);
+ launch_game();assert(!launch_pending&&!trial_process&&wcsstr(launch_notice,L"missing")); /* test executable has no adjacent helper; must not launch silently */
+ assert(DeleteFileW(manifest));trial_toggle(UI_TRIAL_CD);assert(!trial_cd&&!trial_damage&&GetPrivateProfileIntW(L"GameTrial",L"Flags",99,config_path)==0);
+ suspend_key();DeleteFileW(config_path);assert(RemoveDirectoryW(private_state));DestroyWindow(app);UnregisterClassW(panel.lpszClassName,instance);DeleteObject(font);DeleteObject(background);
  puts("PASS actual Windows controls, conflict/save rollback, persistence, centering, executable identity rejection and hide-on-close; no game/input execution");return 0;
 }

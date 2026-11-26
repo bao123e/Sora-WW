@@ -1,6 +1,6 @@
 # WuWa PC — menu và mở game
 
-Bản 0.3.1-launcher-preview thêm chọn/lưu EXE và mở game từ menu. Chưa có God Mode, Damage, cooldown, năng lượng, hút quái hoặc auto nhiệm vụ. Không có thông báo “gameplay READY”.
+Bản 0.4.1-recovery khôi phục trạng thái trước gói thử 0.4 sau báo cáo game đóng. Nó tạm dừng hai lựa chọn cũ, gỡ riêng gói do tool tạo có hash còn khớp trước khi mở game. Chưa xác định nguyên nhân gốc của lần văng và chưa có backend bật/tắt gameplay trong phiên game.
 
 Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 
@@ -9,16 +9,15 @@ Thông tin chủ tool đã cung cấp ngày 26/11/2026:
 - Khu vực SEA.
 - EXE đã gửi có tài nguyên phiên bản UE4 4.26; chưa xác minh API đồ họa khi game chạy. Chuỗi trên là bằng chứng từ ảnh màn hình, không phải chứng nhận tương thích executable.
 
-## Dùng thử
+## Khôi phục
 
-1. Giải nén toàn bộ gói vào một thư mục riêng. Để game ở chế độ cửa sổ hoặc không viền để dùng menu.
-2. Chạy `Start-WuWa-PC.cmd`. Trình khởi động tự kiểm tra control Windows và lưu/đọc cấu hình tạm trước khi mở chương trình. Không cần gửi file game lớn.
-3. Menu mặc định ẩn. Nhấn **F1**, hoặc nhấp biểu tượng WuWa PC dưới khay hệ thống để mở.
-4. Trong Tổng quan, chọn **Chọn EXE…**, tới `Client\Binaries\Win64\Client-Win64-Shipping.exe` của bản cài đặt. Đường dẫn được lưu riêng cùng cấu hình, hỗ trợ thư mục có dấu. Bấm **Mở game** để mở EXE đã chọn với tham số `-krqlv=sd` do chủ tool cung cấp cho bản SD. Không cần thêm tham số vào tên file hoặc tạo shortcut. Nếu game yêu cầu launcher chính thức, dùng launcher đó; tool vẫn nhận diện cửa sổ của EXE đã chọn. Menu chỉ tự ẩn sau khi thấy cửa sổ game, không dựa vào thời gian tải cố định. Bấm mở nhiều lần sẽ không mở thêm phiên khi tiến trình game đang chạy.
-5. Bấm ô phím, nhấn tổ hợp muốn dùng, rồi **Lưu**. Hỗ trợ phím riêng hoặc Ctrl/Alt/Shift. **Mặc định** chỉ điền lại F1; cần Lưu để áp dụng. Phím trùng hoặc không lưu được cấu hình sẽ giữ lựa chọn cũ.
-6. X ở góc cửa sổ chỉ ẩn menu. **Thoát** trong menu hoặc menu chuột phải của biểu tượng khay hệ thống sẽ thoát hẳn và bỏ đăng ký phím.
+1. Đóng game và **Thoát** hẳn tool 0.4. Giải nén toàn bộ ZIP mới vào thư mục riêng, giữ `WuWa-PC.exe` và `Sora-Gameplay.exe` cạnh nhau.
+2. Chạy `Start-WuWa-PC.cmd`, mở menu bằng phím đã lưu. Đường dẫn EXE và phím tùy chỉnh được giữ nguyên. Hai lựa chọn cũ hiển thị **Tạm dừng**.
+3. Bấm **Khôi phục / Mở game**. Nếu có gói thử do tool ghi, backend đối chiếu hồ sơ/hash rồi gỡ `Client\Content\Paks\zz_SoraWW_Experimental_P.pak` trước khi mở game. PAK/SIG/EXE gốc không bị sửa.
+4. Nếu game vẫn đóng sau khi đã gỡ gói, cần kiểm tra lỗi/crash log thực tế. Bản này không khẳng định đã sửa nguyên nhân gốc. Không bật lại bản vá 0.4 để thử lặp.
+5. Nếu gói không có hồ sơ sở hữu hoặc hash đã thay đổi, tool sẽ báo lỗi và không tự xóa. Không xóa các PAK gốc để xử lý.
 
-Phím được lưu tại `%LOCALAPPDATA%\WuWaPC\settings.ini`, riêng cho sản phẩm này. Không dùng key, issuer hoặc cấu hình thanh toán của SoraVynx.
+Đây là bản khôi phục, không có chức năng gameplay đang hoạt động. Việc bật/tắt ngay trong phiên game cần một backend khác được kiểm chứng; các lựa chọn 0.4 chỉ sửa file trước lúc game khởi động và không đáp ứng yêu cầu đó.
 
 ## Giao diện theo ảnh tham khảo
 
@@ -31,11 +30,11 @@ Nền tối có độ trong nhẹ, thanh tiêu đề xanh, tab Tổng quan / Ph�
 - Menu có bắt đầu ẩn và mở bằng phím đã chọn không?
 - Menu có nằm giữa cửa sổ game không?
 - Đổi phím, thoát hẳn, mở lại: phím có được giữ không?
-- Dòng trạng thái có hiện **Game window found (read only)** không? Nếu chưa, gửi đúng dòng trạng thái; chưa cần gửi đường dẫn hoặc file game.
+- Dòng trạng thái có hiện **Game window found** không? Nếu chưa, gửi đúng dòng trạng thái; chưa cần gửi đường dẫn hoặc file game.
 
 Bộ dò chỉ đọc lớp cửa sổ, tên tiến trình và thông tin cửa sổ. Nó đòi hỏi `UnrealWindow` và executable `Client-Win64-Shipping.exe`. Khi đã chọn EXE, đường dẫn tiến trình phải khớp đường dẫn đã lưu; khi chưa chọn, nó dùng thêm tên cửa sổ/thư mục phù hợp Wuthering Waves. Nhiều cửa sổ khớp hoặc không xác minh được executable sẽ không tự chọn. Không yêu cầu quyền quản trị để vượt lỗi nhận diện. Nếu di chuyển hoặc cập nhật game sang vị trí khác, dùng Chọn EXE để chọn lại. Nếu sau hai phút chưa thấy cửa sổ, tool hiện thông báo để bạn kiểm tra game; không tự mở lại liên tục.
 
-Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không tạo log/ảnh màn hình. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
+Bản này không đọc/ghi bộ nhớ game, không tiêm DLL, không gửi phím/click vào game, không gọi mạng và không chụp màn hình. Bản khôi phục chỉ gỡ gói có hash khớp hồ sơ cục bộ của tool; không tạo gói mới. Không suy ra rằng các tính năng gameplay sẽ hoạt động từ việc thấy cửa sổ.
 
 ## Kiểm chứng
 

@@ -39,6 +39,7 @@ static wchar_t config_path[32768];
 static wchar_t game_path[32768],launch_notice[256];
 static BOOL launch_pending;
 static ULONGLONG launch_started;
+static BOOL trial_cd,trial_damage;
 static NOTIFYICONDATAW tray;
 
 static WORD key_word(struct WKey key);
@@ -48,9 +49,16 @@ static void update_key_text(void);
 static void poll_game(void);
 static void choose_game(void);
 static void launch_game(void);
+static void launch_game_direct(void);
+static BOOL trial_before_launch(void);
+static void trial_toggle(int id);
+static void trial_remove(void);
+static void trial_poll(void);
+static void trial_shutdown(void);
 static LRESULT CALLBACK key_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp);
 #include "ui.h"
 #include "launcher.h"
+#include "trial.h"
 
 static BOOL set_key_registration(struct WKey key){return RegisterHotKey(app,MENU_HOTKEY,key.mods|MOD_NOREPEAT,key.vk);}
 static void suspend_key(void){if(key_registered)UnregisterHotKey(app,MENU_HOTKEY);key_registered=FALSE;}
@@ -112,7 +120,7 @@ static BOOL CALLBACK find_game(HWND hwnd,LPARAM unused){
 static void poll_game(void){
  if(!tracking)return;matches=unverified=0;game=NULL;game_pid=0;EnumWindows(find_game,0);
  wchar_t text[256];
- if(matches==1)swprintf(text,256,ui_text(L"Đã tìm thấy cửa sổ game (chỉ đọc) — PID %lu",L"Game window found (read only) - PID %lu"),(unsigned long)game_pid);
+ if(matches==1)swprintf(text,256,ui_text(L"Đã tìm thấy cửa sổ game — PID %lu",L"Game window found - PID %lu"),(unsigned long)game_pid);
  else if(matches>1){game=NULL;wcscpy(text,ui_text(L"Có nhiều cửa sổ game. Hãy đóng phiên mở thêm.",L"Multiple game windows found. Close the extra instance first."));}
  else if(unverified)wcscpy(text,ui_text(L"Đã thấy cửa sổ Unreal; chưa xác minh được tiến trình.",L"Unreal window found; executable identity not verified."));
  else wcscpy(text,ui_text(L"Đang chờ cửa sổ Wuthering Waves…",L"Waiting for the Wuthering Waves game window..."));
@@ -156,6 +164,8 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
   if(ui_command(LOWORD(wp)))return 0;
   if(LOWORD(wp)==UI_BROWSE_GAME){choose_game();return 0;}
   if(LOWORD(wp)==UI_LAUNCH_GAME){launch_game();return 0;}
+  if(LOWORD(wp)==UI_TRIAL_CD||LOWORD(wp)==UI_TRIAL_DAMAGE){trial_toggle(LOWORD(wp));return 0;}
+  if(LOWORD(wp)==UI_TRIAL_REMOVE){trial_remove();return 0;}
   if(LOWORD(wp)==SAVE_KEY)save_key();
   else if(LOWORD(wp)==DEFAULT_KEY){SendMessageW(key_field,HKM_SETHOTKEY,key_word((struct WKey){VK_F1,0}),0);SetWindowTextW(note_label,ui_text(L"Đã chọn F1. Bấm Lưu để áp dụng.",L"Default selected. Click Save to apply it."));}
   else if(LOWORD(wp)==EXIT_APP)DestroyWindow(hwnd);
@@ -164,7 +174,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
   if(lp==WM_LBUTTONUP)show_panel();
   if(lp==WM_RBUTTONUP){HMENU popup=CreatePopupMenu();AppendMenuW(popup,MF_STRING,OPEN_APP,ui_text(L"Mở menu",L"Open menu"));AppendMenuW(popup,MF_STRING,EXIT_APP,ui_text(L"Thoát",L"Exit"));POINT point;GetCursorPos(&point);SetForegroundWindow(hwnd);TrackPopupMenu(popup,TPM_RIGHTBUTTON,point.x,point.y,0,hwnd,NULL);DestroyMenu(popup);PostMessageW(hwnd,WM_NULL,0,0);}return 0;
  case WM_TIMER:
-  if(wp==1){poll_game();if(IsWindowVisible(hwnd))center_panel();}
+  if(wp==1){trial_poll();poll_game();if(IsWindowVisible(hwnd))center_panel();}
   if(wp==2&&!key_registered&&!key_editing){static BOOL previous;BOOL down=fallback_menu_down();if(down&&!previous){if(IsWindowVisible(hwnd))ShowWindow(hwnd,SW_HIDE);else show_panel();}previous=down;}return 0;
  case WM_NCHITTEST:{LRESULT hit=DefWindowProcW(hwnd,msg,wp,lp);return hit==HTCAPTION?HTCLIENT:hit;}
  case WM_SYSCOMMAND:if((wp&0xfff0)==SC_MOVE||(wp&0xfff0)==SC_SIZE)return 0;break;
@@ -180,7 +190,7 @@ static LRESULT CALLBACK window_proc(HWND hwnd,UINT msg,WPARAM wp,LPARAM lp){
 
  case WM_CLOSE:ShowWindow(hwnd,SW_HIDE);return 0;
  case WM_DESTROY:
-  tracking=FALSE;KillTimer(hwnd,1);KillTimer(hwnd,2);suspend_key();if(tray_added)Shell_NotifyIconW(NIM_DELETE,&tray);ui_ready=FALSE;PostQuitMessage(0);return 0;
+  tracking=FALSE;trial_shutdown();KillTimer(hwnd,1);KillTimer(hwnd,2);suspend_key();if(tray_added)Shell_NotifyIconW(NIM_DELETE,&tray);ui_ready=FALSE;PostQuitMessage(0);return 0;
  }
  return DefWindowProcW(hwnd,msg,wp,lp);
 }
@@ -206,9 +216,9 @@ int WINAPI wWinMain(HINSTANCE module,HINSTANCE previous,PWSTR command,int show){
  WNDCLASSW klass={0};klass.hInstance=module;klass.lpfnWndProc=window_proc;klass.lpszClassName=APP_CLASS;klass.hCursor=LoadCursorW(NULL,IDC_ARROW);klass.hIcon=LoadIconW(NULL,IDI_APPLICATION);klass.hbrBackground=background;
  if(!RegisterClassW(&klass)){CloseHandle(instance_mutex);return 3;}
  RECT desktop={0};SystemParametersInfoW(SPI_GETWORKAREA,0,&desktop,0);int menu_height=758;if(desktop.bottom-desktop.top>400&&desktop.bottom-desktop.top<790)menu_height=desktop.bottom-desktop.top-32;
- app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Game launcher 0.3",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
+ app=CreateWindowExW(WS_EX_TOOLWINDOW|WS_EX_TOPMOST|WS_EX_LAYERED|WS_EX_CONTROLPARENT,APP_CLASS,L"Sora WW - Recovery 0.4.1",WS_POPUP|WS_SYSMENU|WS_CLIPCHILDREN,0,0,710,menu_height,NULL,NULL,module,NULL);if(!app){CloseHandle(instance_mutex);return 4;}
  init_config();struct WKey saved;if(config_path[0]&&read_binding(config_path,&saved))menu_key=saved;
- load_game_path();
+ load_game_path();trial_cd=trial_damage=FALSE;trial_save(FALSE,FALSE);
  ui_create();
  tray.cbSize=sizeof(tray);tray.hWnd=app;tray.uID=1;tray.uFlags=NIF_MESSAGE|NIF_ICON|NIF_TIP;tray.uCallbackMessage=TRAY_MESSAGE;tray.hIcon=klass.hIcon;
  update_key_text();tray_added=Shell_NotifyIconW(NIM_ADD,&tray);key_registered=set_key_registration(menu_key);poll_game();center_panel();SetTimer(app,1,750,NULL);SetTimer(app,2,50,NULL);

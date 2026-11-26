@@ -18,8 +18,15 @@ jobs:
       - uses: mlugg/setup-zig@v2
         with:
           version: '0.14.1'
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install file preparer build dependencies
+        run: python -m pip install -r tools/gameplay-prototype/requirements.txt pyinstaller==6.16.0
       - name: Build Windows x64 and check PE imports
         run: python scripts/build.py --zig zig
+      - name: Build and verify frozen file preparer
+        run: python scripts/build_backend.py
       - name: Verify native UI, shortcuts and the actual EXE lifecycle
         run: python scripts/verify_windows.py --zig zig
       - name: Package verified binary and source
@@ -45,7 +52,7 @@ jobs:
             dist/windows-verification.json
             dist/ui-preview-*.png
       - name: Publish foundation preview
-        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/game-launcher'
+        if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/feature/gameplay-trial'
         shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
@@ -59,10 +66,10 @@ jobs:
             exit 1
           fi
           cat > "$RUNNER_TEMP/wuwa-release.md" <<'NOTES'
-          Sửa lệnh Mở game để truyền tham số -krqlv=sd do chủ tool cung cấp cho bản SD. EXE và tham số được truyền riêng qua Windows ShellExecuteEx; không cần sửa tên file hay tạo shortcut. Giữ đường dẫn, phím menu và thiết lập đã lưu.
+          Bản khôi phục sau báo cáo game đóng khi dùng gói thử 0.4. Hai lựa chọn cũ bị tạm dừng và không được bật lại từ cấu hình đã lưu. Nút Khôi phục / Mở game gỡ gói thử có hash khớp hồ sơ tool rồi mới mở EXE gốc với -krqlv=sd. Không tạo gói mới, không sửa PAK/SIG/EXE gốc.
 
-          Thoát bản cũ bằng Thoát, giải nén toàn bộ ZIP win64, chạy Start-WuWa-PC.cmd và mở menu bằng phím đã lưu. Bấm Mở game trong Tổng quan. Nếu chưa chọn đường dẫn, chọn Client/Binaries/Win64/Client-Win64-Shipping.exe.
+          Đóng game, Thoát hẳn bản tool 0.4, giải nén toàn bộ ZIP mới (giữ cả hai EXE), mở menu và bấm Khôi phục / Mở game. Nếu không chứng minh được gói là của tool hoặc file đã thay đổi, tool giữ nguyên và báo lỗi thay vì tự xóa.
 
-          Windows CI khởi chạy EXE mô phỏng chỉ tạo cửa sổ khi nhận đúng -krqlv=sd và đúng thư mục làm việc; đồng thời kiểm tra đường dẫn Unicode, chống mở trùng, chờ cửa sổ và tự ẩn menu. Chưa xác nhận việc vào WuWa thật; ba chức năng gameplay vẫn chưa triển khai.
+          Windows CI kiểm tra đặt lại cấu hình cũ, nút tạm dừng, chặn chuẩn bị gói mới, luồng menu → backend gỡ gói → mở EXE mô phỏng, cùng các kiểm tra phím/đường dẫn/giao diện. Chưa có xác nhận khôi phục trên máy người dùng; nguyên nhân cụ thể của lần văng và backend gameplay thời gian thực vẫn chưa xác minh.
           NOTES
-          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Game launcher preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+          gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Recovery from 0.4 trial" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
