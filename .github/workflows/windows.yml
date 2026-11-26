@@ -7,6 +7,7 @@ permissions:
   contents: read
 jobs:
   windows:
+    if: github.ref != 'refs/heads/analysis/pak-headers'
     runs-on: windows-latest
     timeout-minutes: 12
     permissions:
@@ -66,3 +67,36 @@ jobs:
           Windows CI đã kiểm tra EXE thật, tabs, lưu phím, khôi phục khi trùng/lưu lỗi, ngôn ngữ, ghim và độ trong suốt qua lần khởi động tiếp theo. Ảnh xem trước chỉ chụp chính ứng dụng thử nghiệm trên CI, không có game/tài khoản. Chủ tool đã xác nhận bản nền nhận diện được cửa sổ WuWa; giao diện mới cần xác nhận hiển thị trong game thực tế.
           NOTES
           gh release create "$tag" dist/*.zip dist/*.sha256 dist/ui-preview-*.png --repo "$GITHUB_REPOSITORY" --target "$GITHUB_SHA" --title "Sora WW $version - Dark UI preview" --notes-file "$RUNNER_TEMP/wuwa-release.md" --prerelease --latest=false
+  pak_headers:
+    if: github.ref == 'refs/heads/analysis/pak-headers'
+    runs-on: windows-latest
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Test read-only footer collector on synthetic PAK files
+        shell: powershell
+        run: ./tools/pak-headers/Collect-PakHeaders.ps1 -SelfTest
+      - name: Package only footer collection scripts and instructions
+        shell: python
+        run: |
+          from pathlib import Path
+          from zipfile import ZipFile,ZIP_DEFLATED
+          import os,hashlib
+          root=Path('tools/pak-headers');out=Path(os.environ['RUNNER_TEMP'])/'Sora-WW-Pak-Headers-v1.zip'
+          script=(root/'Collect-PakHeaders.ps1').read_text()
+          assert '[IO.FileAccess]::Read' in script and '4096' in script
+          for forbidden in ['SendInput','ReadProcessMemory','WriteProcessMemory','VirtualAllocEx','CreateRemoteThread','Invoke-WebRequest']:
+            assert forbidden not in script
+          with ZipFile(out,'w',ZIP_DEFLATED) as z:
+            for name in ['Collect-PakHeaders.ps1','Inspect-Paks.cmd','README.vi.txt']:z.write(root/name,name)
+          with ZipFile(out) as z:assert z.testzip() is None and len(z.namelist())==3
+          Path(str(out)+'.sha256').write_text(hashlib.sha256(out.read_bytes()).hexdigest()+'  '+out.name+'\n')
+      - name: Publish the tested read-only helper alongside the current UI release
+        shell: bash
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: gh release upload v0.2.0-ui-preview "$RUNNER_TEMP/Sora-WW-Pak-Headers-v1.zip" "$RUNNER_TEMP/Sora-WW-Pak-Headers-v1.zip.sha256" --repo "$GITHUB_REPOSITORY"
