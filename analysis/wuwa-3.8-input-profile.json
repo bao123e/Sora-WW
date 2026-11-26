@@ -1,0 +1,70 @@
+{
+  "schema_version": 1,
+  "inspection_date": "2026-11-26",
+  "source": "owner-supplied split ZIP; static inspection only; executable was not run",
+  "observed_title_screen": "OS_Windows_Product_3.8.0_9244589_3.8.13_9534983 * SD",
+  "binary": {
+    "filename": "Client-Win64-Shipping.exe",
+    "bytes": 166260232,
+    "sha256": "f648064a90fa818912ce037af9d5c3fd6b94973a415a64862ff52b3cd23e3761",
+    "architecture": "AMD64",
+    "format": "PE32+",
+    "resource_product_name": "Wuthering Waves",
+    "resource_product_version": "++UE4+Release-4.26-CL-183729221"
+  },
+  "archive_integrity": {
+    "parts": 7,
+    "crc32": "23f45a09",
+    "verified": true
+  },
+  "engine": {
+    "family": "Unreal Engine",
+    "major": 4,
+    "release": "4.26",
+    "evidence": "VERSIONINFO ProductVersion",
+    "patch_version_verified": false
+  },
+  "static_observations": {
+    "section_count": 15,
+    "section_names": [
+      ".std"
+    ],
+    "largest_executable_section_entropy": 7.995,
+    "import_dependencies": [
+      {
+        "filename": "Client-Win64-ShippingBase.dll",
+        "imported_ordinals": [
+          1
+        ],
+        "inspected": false
+      }
+    ],
+    "puerts_identifiers_present": true
+  },
+  "gameplay": {
+    "god_mode": {
+      "implemented": false,
+      "verified_in_game": false
+    },
+    "no_cooldown": {
+      "implemented": false,
+      "verified_in_game": false
+    },
+    "damage_multiplier": {
+      "implemented": false,
+      "verified_in_game": false
+    }
+  },
+  "limitations": [
+    "No runtime gameplay function target has been verified from this file.",
+    "A cooldown-related identifier alone does not establish player skill cooldown behavior.",
+    "Puerts binding identifiers do not by themselves establish where game-specific gameplay logic resides.",
+    "The EXE imports only the uninspected companion module by ordinal; matching companion data is required before further conclusions."
+  ],
+  "next_required_file": {
+    "filename": "Client-Win64-ShippingBase.dll",
+    "expected_relative_directory": "Client/Binaries/Win64",
+    "requirement": "Must come from the same installed game build as the supplied EXE."
+  },
+  "repository_contains_game_binary": false
+}
